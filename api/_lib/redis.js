@@ -4,8 +4,8 @@
 // underscore excludes them), so this is safe as a plain shared module.
 
 function redisConfig() {
-  var url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  var token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  var url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || process.env.UPSTASH_REDIS_REST_KV_REST_API_URL;
+  var token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN;
   return { url: url, token: token };
 }
 
