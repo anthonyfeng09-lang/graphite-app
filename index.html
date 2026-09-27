@@ -187,6 +187,10 @@
   .expr-input{flex:1;min-width:0;border:none;background:transparent;font-size:14.5px;color:var(--ink);padding:6px 2px;font-variant-numeric:tabular-nums;}
   .expr-input-stack .expr-input{width:100%;}
   .expr-input:focus{outline:none;}
+  math-field.expr-mf{display:block;width:100%;border:none;background:transparent;font-size:17px;padding:4px 2px;color:var(--ink);outline:none;--caret-color:var(--accent,#2d70b3);--selection-background-color:rgba(45,112,179,.18);--contains-highlight-background-color:transparent;--placeholder-color:var(--ink-faint);--primary-color:var(--accent,#2d70b3);}
+  math-field.expr-mf:focus-within{outline:none;}
+  math-field.expr-mf::part(menu-toggle),math-field.expr-mf::part(virtual-keyboard-toggle){display:none;}
+  math-field.expr-mf::part(content){padding:2px 0;}
   .expr-input::placeholder{color:var(--ink-faint);}
   .expr-pretty{position:absolute;inset:0;display:none;align-items:center;padding:6px 2px;font-size:14.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text;background:var(--bg);font-variant-numeric:tabular-nums;pointer-events:none;}
   .expr-pretty.visible{display:flex;}
@@ -315,6 +319,19 @@
 
   .graph-wrap{flex:1;position:relative;min-width:0;background:var(--bg);}
   #graph{position:absolute;inset:0;width:100%;height:100%;touch-action:none;}
+  .graph-wrap.sliding{overflow:hidden;}
+  #canvas3d{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;}
+  #canvas3d:active{cursor:grabbing;}
+  .hint3d{position:absolute;left:12px;bottom:10px;font-size:11.5px;color:var(--ink-faint);pointer-events:none;}
+  #spin3d.on{color:var(--accent,#2d70b3);}
+  .row3-num{flex:none;width:18px;font-size:10px;color:var(--ink-faint);margin-top:10px;text-align:right;margin-right:6px;}
+  .row3-extra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+  .row3-extra:empty{display:none;}
+  .row3-slider{flex:1;min-width:80px;}
+  .row3-val{font-size:12px;color:var(--ink-soft);min-width:34px;}
+  .row3-range{font-size:11.5px;color:var(--ink-soft);}
+  .row3-range input{width:52px;border:1px solid var(--line);border-radius:5px;background:var(--bg);color:var(--ink);font-size:11.5px;padding:2px 4px;}
+  #examples3d{max-width:100%;}
   #graph.cursor-grab,#geoCanvas.cursor-grab{cursor:grab;}
   #graph.cursor-grab:active,#geoCanvas.cursor-grab:active{cursor:grabbing;}
   #graph.cursor-crosshair,#geoCanvas.cursor-crosshair{cursor:crosshair;}
@@ -643,6 +660,7 @@
     <div class="wordmark"><span class="mark"></span>Graphate</div>
     <div class="mode-switch">
       <button id="modeGraphingBtn" class="active">Graphing</button>
+      <button id="mode3dBtn">3D</button>
       <button id="modeGeometryBtn">Geometry</button>
       <button id="modeCalcBtn">Calculator</button>
       <button id="modeSheetBtn">Spreadsheet</button>
@@ -757,6 +775,38 @@
       </div>
     </section>
 
+    <aside class="sidebar" id="sidebar3d" style="display:none;">
+      <div class="list-toolbar">
+        <select class="list-toolbar-btn" id="examples3d" title="Add an example">
+          <option value="">Add an example...</option>
+          <option value="z=x^2-y^2">Saddle: z = x&sup2; - y&sup2;</option>
+          <option value="x^2+y^2+z^2=9">Sphere: x&sup2;+y&sup2;+z&sup2; = 9</option>
+          <option value="z=3exp(-(x^2+y^2)/4)">Hill: z = 3e^(-(x&sup2;+y&sup2;)/4)</option>
+          <option value="(3cos(u)sin(v), 3sin(u)sin(v), 3cos(v))">Sphere made from u and v</option>
+          <option value="((3+cos(v))cos(u), (3+cos(v))sin(u), sin(v))">Donut (torus)</option>
+          <option value="(3cos(t), 3sin(t), t/3)">Spiral curve</option>
+          <option value="a=1|z=a*sin(x)*cos(y)">Surface with a slider</option>
+          <option value="(1,2,3)">Point (1, 2, 3)</option>
+        </select>
+      </div>
+      <div class="expr-list" id="list3d"></div>
+      <div class="add-row" id="add3dRow"><span class="plus">+</span> Add expression</div>
+    </aside>
+    <section class="graph-wrap" id="wrap3d" style="display:none;">
+      <canvas id="canvas3d"></canvas>
+      <div class="hint3d">Drag to turn. Scroll or pinch to zoom.</div>
+      <div class="view-controls">
+        <button id="zoomIn3d" aria-label="Zoom in" title="Zoom in">+</button>
+        <button id="zoomOut3d" aria-label="Zoom out" title="Zoom out">&minus;</button>
+        <button id="spin3d" aria-label="Spin" title="Spin slowly">
+          <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M12.5 7.5a5 5 0 1 1-1.6-3.7M12.5 2v3.2H9.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="home3d" aria-label="Reset view" title="Reset view">
+          <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M2 7.5 7.5 2l5.5 5.5M4 6v6.5h7V6" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </section>
+
     <section class="calc-wrap" id="calcWrap" style="display:none;">
       <div class="calc-card">
         <div class="calc-history" id="calcHistory"></div>
@@ -859,6 +909,7 @@
           <div class="settings-row"><span>Angles</span><div class="seg" id="angleSeg">
             <button data-v="radians">Radians</button><button data-v="degrees">Degrees</button></div></div>
           <div class="settings-row"><span>Show grid</span><button class="switch" id="gridSwitch"></button></div>
+          <div class="settings-row"><span>Math-style typing</span><button class="switch" id="mathTypingSwitch" title="Fractions, powers and roots build up as you type, like Desmos"></button></div>
           <div class="settings-row"><span>Cursor</span><div class="seg" id="cursorSeg">
             <button data-v="grab">Grab</button><button data-v="crosshair">Crosshair</button><button data-v="precise">Precise</button><button data-v="arrow">Arrow</button></div></div>
           <div class="settings-row" id="cursorColorRow" style="display:none;"><span>Arrow color</span><div class="cursor-swatches" id="cursorSwatches"></div></div>
@@ -869,6 +920,8 @@
           <div class="settings-row"><span>Grid</span><div class="seg" id="gridTypeSeg">
             <button data-v="cartesian">Square</button><button data-v="polar">Polar</button></div></div>
           <div class="settings-row"><span>Show axes</span><button class="switch" id="axesSwitch"></button></div>
+          <div class="settings-row"><span>Log scale x-axis</span><button class="switch" id="logXSwitch"></button></div>
+          <div class="settings-row"><span>Log scale y-axis</span><button class="switch" id="logYSwitch"></button></div>
           <div class="settings-row"><span>Show axis numbers</span><button class="switch" id="numbersSwitch"></button></div>
           <div class="settings-row"><span>x-axis label</span><input class="gs-input" id="xLabelInput" placeholder="e.g. time (s)"></div>
           <div class="settings-row"><span>y-axis label</span><input class="gs-input" id="yLabelInput" placeholder="e.g. height (m)"></div>
@@ -1340,6 +1393,42 @@ function bcast(a,b,fn){
 function mapUnary(a,fn){ return Array.isArray(a) ? a.map(function(v){return fn(v);}) : fn(a); }
 function truthy(v){ return v>0.5; }
 
+var CALL_DEPTH={n:0};
+/* "mx" means m times x, "sinx" means sin(x), like Desmos. Tries to split an
+   unknown name into known variables. Returns undefined if it can't. */
+function splitIdValue(name, scope){
+  function known(k){ return (k in scope) || Object.prototype.hasOwnProperty.call(BUILTIN_CONST,k); }
+  function val(k){ return (k in scope)?scope[k]:BUILTIN_CONST[k]; }
+  var memo={};
+  function solve(i){
+    if(i===name.length) return [];
+    if(memo[i]!==undefined) return memo[i];
+    memo[i]=null;
+    for(var j=name.length;j>i;j--){
+      var piece=name.slice(i,j);
+      if(/^[0-9]/.test(piece)) continue;
+      if(piece!==name && known(piece)){ var rest=solve(j); if(rest){ memo[i]=[{v:piece}].concat(rest); return memo[i]; } }
+      var lp=piece.toLowerCase();
+      if(j<name.length && Object.prototype.hasOwnProperty.call(BUILTIN_FN,lp) && BUILTIN_FN[lp].length<=1){
+        var rest2=solve(j); if(rest2){ memo[i]=[{f:lp, rest:rest2}]; return memo[i]; }
+      }
+    }
+    return null;
+  }
+  var plan=solve(0);
+  if(!plan || !plan.length) return undefined;
+  function run(parts){
+    var acc=1;
+    for(var k=0;k<parts.length;k++){
+      var pt=parts[k], v;
+      if(pt.f){ var inner=run(pt.rest), fn=BUILTIN_FN[pt.f]; v=mapUnary(inner, function(z){ return fn(z); }); }
+      else v=val(pt.v);
+      acc=(k===0)?v:bcast(acc,v,function(a,b){ return a*b; });
+    }
+    return acc;
+  }
+  return run(plan);
+}
 function compile(node, userFns){
   switch(node.type){
     case 'num': { var v=node.v; return function(){ return v; }; }
@@ -1348,6 +1437,7 @@ function compile(node, userFns){
       return function(scope){
         if(name in scope) return scope[name];
         if(Object.prototype.hasOwnProperty.call(BUILTIN_CONST,name)) return BUILTIN_CONST[name];
+        if(name.length>1){ var sv=splitIdValue(name, scope); if(sv!==undefined) return sv; }
         throw new Error("Undefined variable '"+name+"'");
       };
     }
@@ -1466,11 +1556,15 @@ function compile(node, userFns){
       }
       if(userFns && Object.prototype.hasOwnProperty.call(userFns,node.name)){
         var def=userFns[node.name];
-        var bodyFn=def.compiled, params=def.params;
+        /* looked up when called, so functions can call themselves (recursion)
+           and can be defined in any order */
         return function(scope){
-          var inner=Object.create(scope);
+          if(!def.compiled) return NaN;
+          if(CALL_DEPTH.n>800) throw new Error("Recursion goes too deep. Add a stopping case like {n=0: 1, ...}");
+          var params=def.params, inner=Object.create(scope);
           for(var i=0;i<params.length;i++) inner[params[i]]=argFns[i]?argFns[i](scope):NaN;
-          return bodyFn(inner);
+          CALL_DEPTH.n++;
+          try{ return def.compiled(inner); } finally { CALL_DEPTH.n--; }
         };
       }
       if(Object.prototype.hasOwnProperty.call(AGGREGATE_FNS,fname)){
@@ -1572,6 +1666,32 @@ function parseDomainClause(text){
   return result;
 }
 
+/* restrictions at the end, like {x>0}, {0<t<2}{y<3}, {x^2+y^2<4} */
+function extractRestrictions(text){
+  var conds=[];
+  for(var guard=0; guard<8; guard++){
+    var m=text.match(/^(.*\S)\s*\{([^{}]*)\}\s*$/);
+    if(!m) break;
+    var inner=m[2], before=m[1].trim();
+    if(inner.indexOf(':')!==-1 || inner.indexOf(',')!==-1 || !/[<>]/.test(inner)) break;
+    if(/[=<>+\-*\/^,(]$/.test(before)) break;
+    conds.unshift(inner); text=before;
+  }
+  return {core:text, conds:conds};
+}
+function compileRestriction(conds, fns){
+  if(!conds || !conds.length) return null;
+  var checks=conds.map(function(ct){
+    var ast=parseExpression(ct);
+    if(ast.type!=='rel') throw new Error('A restriction needs < or >, like {x>0}');
+    return compile(ast, fns);
+  });
+  return function(scope){
+    for(var i=0;i<checks.length;i++){ var ok; try{ ok=checks[i](scope); }catch(e){ ok=0; } if(!ok) return false; }
+    return true;
+  };
+}
+
 function findTopLevelArrow(src){
   var depth=0;
   for(var i=0;i<src.length-1;i++){
@@ -1586,6 +1706,13 @@ var STAT_PLOTS={histogram:1, boxplot:1, dotplot:1};
 function classify(raw, userFns){
   var text=raw.trim();
   if(text==='') return {kind:'empty'};
+  var rs=extractRestrictions(text);
+  if(rs.conds.length){
+    var inner=classify(rs.core, userFns);
+    if(inner.kind==='slider'||inner.kind==='value'||inner.kind==='action'||inner.kind==='regression'||inner.kind==='statplot') throw new Error("Restrictions like {x>0} only work on graphs");
+    inner.conds=rs.conds;
+    return inner;
+  }
 
   /* actions: "a -> a+1" or "a -> a+1, b -> 0" */
   if(findTopLevelArrow(text)!==-1){
@@ -1628,11 +1755,8 @@ function classify(raw, userFns){
         return {kind:'function-def', name:fname, params:params, ast:bodyAst};
       }
       if(left==='y' || left==='x'){
-        var dm=extractDomainSuffix(right);
-        var ast=parseExpression(dm.core);
-        var domain=null;
-        if(dm.domainText){ domain=parseDomainClause(dm.domainText); }
-        return {kind: left==='y'?'explicit-y':'explicit-x', ast:ast, domain:domain};
+        var ast=parseExpression(right);
+        return {kind: left==='y'?'explicit-y':'explicit-x', ast:ast, domain:null};
       }
       if(left==='r'){
         var rAst;
@@ -1666,8 +1790,15 @@ function classify(raw, userFns){
 
   var bareAst=parseExpression(text);
   var idset=collectIds(bareAst,new Set());
-  if(idset.has('x')) return {kind:'explicit-y', ast:bareAst, domain:null};
-  if(idset.has('y')) return {kind:'explicit-x', ast:bareAst, domain:null};
+  /* also count names like "mx" (m times x) */
+  function usesVar(v){
+    if(idset.has(v)) return true;
+    var hit=false;
+    idset.forEach(function(nm){ if(nm.length>1 && new RegExp(v+'(?![0-9])').test(nm) && !Object.prototype.hasOwnProperty.call(BUILTIN_CONST,nm) && !/^(theta|alpha|beta|gamma|delta|phi|lambda|mu|sigma|omega|pi|tau|rho|epsilon|eta|zeta|psi|chi|xi|nu|kappa|iota|upsilon)$/.test(nm)) hit=true; });
+    return hit;
+  }
+  if(usesVar('x')) return {kind:'explicit-y', ast:bareAst, domain:null};
+  if(usesVar('y')) return {kind:'explicit-x', ast:bareAst, domain:null};
   return {kind:'value', ast:bareAst};
 }
 
@@ -1736,6 +1867,7 @@ function getGraphStateObj(){
     images: usedImages(),
     view:{cx:view.cx,cy:view.cy,scale:view.scale,ry:view.ry||1},
     settings:SETTINGS,
+    three: window.__get3dState ? window.__get3dState() : undefined,
     title: titleEl ? titleEl.value.trim() : ''
   };
 }
@@ -1757,7 +1889,9 @@ function applyGraphStateObj(data){
   });
   view.ry=1;
   if(data.view) Object.assign(view,data.view);
+  SETTINGS.logX=false; SETTINGS.logY=false;
   if(data.settings) Object.assign(SETTINGS,data.settings);
+  if(data.three && window.__apply3dState){ try{ window.__apply3dState(data.three); }catch(e){} }
   return true;
 }
 function loadState(){
@@ -1968,13 +2102,23 @@ function recompute(){
       row.kind=c.kind;
       row.parsed=c;
       if(c.kind==='function-def'){
-        var compiled=compile(c.ast, userFns);
-        userFns[c.name]={params:c.params, compiled:compiled};
+        userFns[c.name]={params:c.params, compiled:null};
       }
     }catch(e){
       row.error=e.message||String(e);
       row.kind='error';
     }
+  });
+  /* compile function bodies after every name is known */
+  rows.forEach(function(row){
+    if(row.kind!=='function-def' || !row.parsed) return;
+    var c=row.parsed;
+    try{
+      var compiled=compile(c.ast, userFns);
+      var frf=compileRestriction(c.conds, userFns);
+      if(frf){ var baseF=compiled; compiled=function(scope){ return frf(scope)?baseF(scope):NaN; }; }
+      userFns[c.name].compiled=compiled;
+    }catch(e){ row.error=e.message||String(e); row.kind='error'; }
   });
   rows.forEach(function(row){
     if(row.error || row.isFolder) return;
@@ -2017,13 +2161,21 @@ function recompute(){
         defsScope[c.name]=row.sliderVal;
       } else if(c.kind==='explicit-y'||c.kind==='explicit-x'||c.kind==='implicit'||c.kind==='inequality'||c.kind==='polar'){
         row.compiled=compile(c.ast, userFns);
-        if(c.domain){
-          row.domainMin = c.domain.minAst ? compile(c.domain.minAst,userFns)(defsScope) : -Infinity;
-          row.domainMax = c.domain.maxAst ? compile(c.domain.maxAst,userFns)(defsScope) : Infinity;
-        } else { row.domainMin=-Infinity; row.domainMax=Infinity; }
+        row.domainMin=-Infinity; row.domainMax=Infinity;
+        var rf=compileRestriction(c.conds, userFns);
+        row.restrictFn=rf;
+        if(rf && c.kind!=='polar'){
+          var base=row.compiled, other=(c.kind==='explicit-y'?'y':c.kind==='explicit-x'?'x':null);
+          row.compiled=function(scope){
+            var v=base(scope);
+            if(other){ var s2=Object.create(scope); s2[other]=v; return rf(s2)?v:NaN; }
+            return rf(scope)?v:NaN;
+          };
+        }
       } else if(c.kind==='point'){
         row.compiledX=compile(c.ax, userFns);
         row.compiledY=compile(c.ay, userFns);
+        row.restrictFn=compileRestriction(c.conds, userFns);
         row.isLiteralPoint = c.ax.type==='num' && c.ay.type==='num';
         var idsxy=new Set(); collectIds(c.ax,idsxy); collectIds(c.ay,idsxy);
         var freeVars=[]; idsxy.forEach(function(nm){ if(nm!=='x'&&nm!=='y'&&!Object.prototype.hasOwnProperty.call(defsScope,nm)&&!BUILTIN_CONST.hasOwnProperty(nm)) freeVars.push(nm); });
@@ -2068,6 +2220,7 @@ function recompute(){
       } else {
         row.pointX=row.compiledX(defsScope);
         row.pointY=row.compiledY(defsScope);
+        if(row.restrictFn){ var sp=Object.create(defsScope); sp.x=row.pointX; sp.y=row.pointY; if(!row.restrictFn(sp)){ row.pointX=NaN; row.pointY=NaN; } }
       }
     }catch(e){
       row.error=e.message||String(e);
@@ -2091,7 +2244,50 @@ function formatNum(v){
 var exprListEl=document.getElementById('exprList');
 var addRowEl=document.getElementById('addRow');
 
+/* When the user is typing in a math field, rebuild every row around it
+   but never move the field itself (moving it would drop the cursor). */
+function mtGraft(oldNode, newNode){
+  oldNode.className=newNode.className;
+  var holder=newNode.querySelector('.mf-hold');
+  var kids=Array.prototype.slice.call(newNode.childNodes);
+  var pathOld=null;
+  Array.prototype.slice.call(oldNode.childNodes).forEach(function(ch){
+    if(ch.nodeType===1 && (ch.classList.contains('expr-mf') || ch.querySelector && ch.querySelector('math-field.expr-mf'))) pathOld=ch;
+    else oldNode.removeChild(ch);
+  });
+  var seenPath=false;
+  kids.forEach(function(k){
+    var onPath=(k===holder) || (k.nodeType===1 && k.contains(holder));
+    if(onPath && pathOld){
+      seenPath=true;
+      if(k!==holder) mtGraft(pathOld, k);
+    } else if(!seenPath && pathOld) oldNode.insertBefore(k, pathOld);
+    else oldNode.appendChild(k);
+  });
+}
 function renderList(){
+  if(MT.ready) mtPrune();
+  var act=document.activeElement;
+  if(MT.ready && act && act.tagName==='MATH-FIELD' && act.classList.contains('expr-mf') && exprListEl.contains(act) && MT.cache[act._rowId]===act && mtRow(act._rowId)){
+    MT.hold=act;
+    var oldEl=act.closest('.expr-row'), newEls=[], keepAt=-1;
+    try{
+      var cf=null, fc=false;
+      rows.forEach(function(row, idx){
+        if(row.isFolder){ cf=row.id; fc=row.collapsed; row.folderOf=null; }
+        else row.folderOf=cf;
+        if(row.folderOf && fc && !row.isFolder) return;
+        var el=renderRow(row, idx);
+        if(row.id===act._rowId){ keepAt=newEls.length; mtGraft(oldEl, el); newEls.push(oldEl); }
+        else newEls.push(el);
+      });
+    } finally { MT.hold=null; }
+    if(keepAt>=0){
+      Array.prototype.slice.call(exprListEl.childNodes).forEach(function(ch){ if(ch!==oldEl) exprListEl.removeChild(ch); });
+      newEls.forEach(function(el, i){ if(i<keepAt) exprListEl.insertBefore(el, oldEl); else if(i>keepAt) exprListEl.appendChild(el); });
+      return;
+    }
+  }
   exprListEl.innerHTML='';
   var currentFolder=null, folderCollapsed=false;
   rows.forEach(function(row, idx){
@@ -2101,6 +2297,399 @@ function renderList(){
     if(row.folderOf && folderCollapsed && !row.isFolder) return;
     exprListEl.appendChild(renderRow(row, idx));
   });
+}
+
+/* ===== converting between Graphate text and LaTeX (for math-style typing) ===== */
+var MT_GREEK=['alpha','beta','gamma','delta','epsilon','zeta','eta','theta','iota','kappa','lambda','mu','nu','xi','pi','rho','sigma','tau','upsilon','phi','chi','psi','omega','Gamma','Delta','Theta','Lambda','Xi','Pi','Sigma','Phi','Psi','Omega'];
+var MT_GREEK_SET={}; MT_GREEK.forEach(function(g){ MT_GREEK_SET[g]=1; });
+var MT_TRIG={sin:1,cos:1,tan:1,sec:1,csc:1,cot:1,arcsin:1,arccos:1,arctan:1,sinh:1,cosh:1,tanh:1,ln:1,log:1,exp:1,min:1,max:1,gcd:1,det:1};
+var MT_CMD={
+  '\\cdot':'*','\\times':'*','\\ast':'*','\\div':'/','\\le':'<=','\\leq':'<=','\\leqslant':'<=','\\ge':'>=','\\geq':'>=','\\geqslant':'>=',
+  '\\ne':'!=','\\neq':'!=','\\lt':'<','\\gt':'>','\\to':'->','\\rightarrow':'->','\\longrightarrow':'->','\\mapsto':'->','\\sim':'~',
+  '\\infty':'infinity','\\colon':':','\\{':'{','\\}':'}','\\lbrace':'{','\\rbrace':'}','\\lbrack':'[','\\rbrack':']','\\%':'%',
+  '\\,':'','\\;':'','\\!':'','\\:':'','\\ ':' ','\\quad':'','\\qquad':'','\\exponentialE':'e','\\imaginaryI':'i','\\differentialD':'d',
+  '\\vert':'|','\\lvert':'|','\\rvert':'|','\\mid':'|','\\prime':"'",'\\doubleprime':"''",'\\varphi':'phi','\\vartheta':'theta','\\varepsilon':'epsilon',
+  '\\placeholder':'','\\degree':'deg','\\circ':'deg'
+};
+function mtLatexTokens(s){
+  var t=[], i=0;
+  while(i<s.length){
+    var c=s[i];
+    if(c==='\\'){
+      var m=s.slice(i).match(/^\\([a-zA-Z]+|.)/);
+      t.push('\\'+m[1]); i+=m[0].length;
+      if(/^[a-zA-Z]/.test(m[1])) while(s[i]===' ') i++;
+      continue;
+    }
+    if(c===' '||c==='\n'||c==='\t'||c==='&'){ i++; continue; }
+    t.push(c); i++;
+  }
+  return t;
+}
+function latexToText(latex){
+  var T=mtLatexTokens(latex||''), p=0;
+  function peek(){ return T[p]; }
+  function simple(s){ return /^[0-9.]+$/.test(s) || /^[a-zA-Z]+[0-9]*$/.test(s) || /^\([^()]*\)$/.test(s); }
+  function readGroup(){
+    var t=T[p];
+    if(t===undefined) return '';
+    if(t==='{'){ p++; var inner=seq('}'); if(T[p]==='}') p++; return inner; }
+    p++;
+    return one(t);
+  }
+  function delim(d){
+    if(d==='(' || d==='[' ) return d;
+    if(d===')' || d===']') return d;
+    if(d==='\\{'||d==='\\lbrace') return '{';
+    if(d==='\\}'||d==='\\rbrace') return '}';
+    if(d==='|'||d==='\\vert'||d==='\\lvert'||d==='\\rvert') return '|';
+    if(d==='\\langle') return '('; if(d==='\\rangle') return ')';
+    return '';
+  }
+  /* one token (already consumed) to text; may consume more tokens */
+  function one(t){
+    if(t==='\\frac'||t==='\\dfrac'||t==='\\tfrac'){
+      var a=readGroup(), b=readGroup();
+      if(a==='d' && /^d[a-zA-Z]$/.test(b)) return 'd/'+b;
+      return '('+(simple(a)?a:'('+a+')')+'/'+(simple(b)?b:'('+b+')')+')';
+    }
+    if(t==='\\sqrt'){
+      var n=null;
+      if(T[p]==='['){ p++; n=seq(']'); if(T[p]===']') p++; }
+      var g=readGroup();
+      return n ? '('+g+')^(1/('+n+'))' : 'sqrt('+g+')';
+    }
+    if(t==='\\left'){
+      var d=T[p++];
+      var open=delim(d), close='';
+      if(open==='|'){ var inner=seqRight(); return 'abs('+inner.text+')'; }
+      var r=seqRight();
+      return open+r.text+r.close;
+    }
+    if(t==='\\right'){ return ''; }
+    if(t==='\\operatorname'||t==='\\mathrm'||t==='\\text'||t==='\\textrm'||t==='\\mathit'||t==='\\mathbf'||t==='\\mathord'||t==='\\mathop'||t==='\\mathbin'||t==='\\mathrel'||t==='\\textit'||t==='\\operatorname*'){
+      return readGroup().replace(/\s+/g,'');
+    }
+    if(t==='\\placeholder'){ if(T[p]==='[') { while(p<T.length && T[p]!==']') p++; p++; } readGroup(); return ''; }
+    if(t==='\\sum'||t==='\\prod'){
+      var lo='', hi='';
+      for(var k=0;k<2;k++){ if(T[p]==='_'){ p++; lo=readGroup(); } else if(T[p]==='^'){ p++; hi=readGroup(); } }
+      var eq=lo.indexOf('='), v=eq>0?lo.slice(0,eq):'n', from=eq>0?lo.slice(eq+1):lo;
+      var body=seq(null,true);
+      return (t==='\\sum'?'sum':'prod')+'('+v+','+from+','+hi+','+body+')';
+    }
+    if(t==='\\int'){
+      var a2='', b2='';
+      for(var k2=0;k2<2;k2++){ if(T[p]==='_'){ p++; a2=readGroup(); } else if(T[p]==='^'){ p++; b2=readGroup(); } }
+      var body2=seq(null,false,true);
+      var mm=body2.match(/^(.*?)\*?d([a-zA-Z])$/), iv='x';
+      if(mm){ body2=mm[1]; iv=mm[2]; }
+      return 'int('+iv+','+a2+','+b2+','+body2+')';
+    }
+    if(t.charAt(0)==='\\'){
+      var nm=t.slice(1);
+      if(Object.prototype.hasOwnProperty.call(MT_CMD,t)) return MT_CMD[t];
+      if(MT_GREEK_SET[nm]) return nm;
+      if(MT_TRIG[nm]){
+        if(T[p]==='^'){ /* sin^2 x */ p++; var pw=readGroup(); var arg=trigArg(); return nm+'('+arg+')^'+(simple(pw)?pw:'('+pw+')'); }
+        if(T[p]==='_'){ p++; var base=readGroup(); var arg2=trigArg(); return nm==='log' ? 'log('+arg2+')/log('+base+')' : nm+'('+arg2+')'; }
+        return nm+(T[p]==='\\left'||T[p]==='('?'':'('+trigArg()+')');
+      }
+      return nm;
+    }
+    return t;
+  }
+  function trigArg(){
+    var out='';
+    while(p<T.length){
+      var t=T[p];
+      if(t==='\\left'||t==='('){ p++; return out+(t==='('? '('+seq(')')+(T[p]===')'?(p++,')'):')') : one('\\left')); }
+      if(/^[a-zA-Z0-9.]$/.test(t) || (t.charAt(0)==='\\' && MT_GREEK_SET[t.slice(1)])){ out+=one(T[p++]); if(T[p]==='^'){ p++; var g=readGroup(); out+='^'+(simple(g)?g:'('+g+')'); } continue; }
+      break;
+    }
+    return out;
+  }
+  /* read until \right, returning inner text and the closing delimiter */
+  function seqRight(){
+    var inner=seq('\\right');
+    var close='';
+    if(T[p]==='\\right'){ p++; close=delim(T[p++]); }
+    return {text:inner, close:close};
+  }
+  function seq(until, termMode, intMode){
+    var out='';
+    while(p<T.length){
+      var t=T[p];
+      if(until!==null && t===until) break;
+      if(t==='}' && until!=='}') break;
+      if(t==='\\right' && until!=='\\right') break;
+      if(termMode && (t==='+'||t==='-'||t==='='||t==='<'||t==='>'||t===','||t===':'||t==='\\le'||t==='\\ge'||t==='\\leq'||t==='\\geq'||t==='\\ne')) break;
+      p++;
+      if(t==='{'){ var g=seq('}'); if(T[p]==='}') p++; out+=g; continue; }
+      if(t==='^'){
+        var e=readGroup();
+        if(e==="'"||e==="''"||e==="'''") { out+=e; continue; }
+        out+='^'+(simple(e)?e:'('+e+')'); continue;
+      }
+      if(t==='_'){ out+=readGroup(); continue; }
+      out+=one(t);
+    }
+    return out;
+  }
+  return seq(null).replace(/\s+/g,' ').trim();
+}
+
+/* Graphate text -> LaTeX, so a saved row can be shown in a math field */
+function textToLatex(text){
+  var src=text||'';
+  var toks=[], i=0;
+  var OPS=['<=','>=','!=','->','==','<','>','=','+','-','*','/','^',',',':','~','|',"'",'%','!'];
+  while(i<src.length){
+    var c=src[i];
+    if(/\s/.test(c)){ i++; continue; }
+    if(/[0-9.]/.test(c)){ var m=src.slice(i).match(/^[0-9]*\.?[0-9]+(e-?[0-9]+)?|^[0-9]+\.?/); toks.push({t:'num',v:m[0]}); i+=m[0].length; continue; }
+    if(/[a-zA-Z_]/.test(c)){ var m2=src.slice(i).match(/^[a-zA-Z_][a-zA-Z0-9_]*/); toks.push({t:'id',v:m2[0]}); i+=m2[0].length; continue; }
+    if('([{'.indexOf(c)!==-1){ toks.push({t:'open',v:c}); i++; continue; }
+    if(')]}'.indexOf(c)!==-1){ toks.push({t:'close',v:c}); i++; continue; }
+    var op=null; for(var k=0;k<OPS.length;k++){ if(src.substr(i,OPS[k].length)===OPS[k]){ op=OPS[k]; break; } }
+    if(!op) op=c;
+    toks.push({t:'op',v:op}); i+=op.length;
+  }
+  var p=0;
+  var CLOSE={'(':')','[':']','{':'}'};
+  /* parse a run of tokens into atoms until a closing bracket */
+  function parseRun(){
+    var items=[];
+    while(p<toks.length && toks[p].t!=='close'){
+      var tk=toks[p++];
+      if(tk.t==='open'){
+        var start=p, inner=parseRun();
+        var closeTok=toks[p]; if(closeTok && closeTok.t==='close') p++;
+        items.push({k:'group', open:tk.v, inner:inner, innerToks:toks.slice(start, p-(closeTok&&closeTok.t==='close'?1:0))});
+      } else items.push({k:tk.t, v:tk.v});
+    }
+    return items;
+  }
+  function splitComma(items){
+    var parts=[[]];
+    items.forEach(function(it){ if(it.k==='op'&&it.v===',') parts.push([]); else parts[parts.length-1].push(it); });
+    return parts;
+  }
+  function idLatex(v){
+    if(MT_GREEK_SET[v]) return '\\'+v+' ';
+    var m=v.match(/^([a-zA-Z])([0-9]+)$/);
+    if(m) return m[1]+'_{'+m[2]+'}';
+    if(v.length>1) return '\\mathrm{'+v+'}';
+    return v;
+  }
+  function groupLatex(g, stripParens){
+    var inner=emit(g.inner);
+    if(g.open==='('){ return stripParens? inner : '\\left('+inner+'\\right)'; }
+    if(g.open==='[') return '\\left['+inner+'\\right]';
+    return '\\left\\{'+inner+'\\right\\}';
+  }
+  function hasTopPlus(items){ return items.some(function(it){ return it.k==='op' && (it.v==='+'||it.v==='-'); }); }
+  /* turn items into atoms: {lx:latex, atom:true/false, raw:item} */
+  function atoms(items){
+    var out=[];
+    for(var j=0;j<items.length;j++){
+      var it=items[j], nx=items[j+1];
+      if(it.k==='id' && nx && nx.k==='group' && nx.open==='('){
+        var name=it.v, lname=name.toLowerCase(), args=splitComma(nx.inner);
+        j++;
+        var a;
+        if(lname==='sqrt') a='\\sqrt{'+emit(nx.inner)+'}';
+        else if(lname==='abs') a='\\left|'+emit(nx.inner)+'\\right|';
+        else if((lname==='sum'||lname==='prod'||lname==='product') && args.length===4){
+          var body=args[3];
+          a=(lname==='sum'?'\\sum':'\\prod')+'_{'+emit(args[0])+'='+emit(args[1])+'}^{'+emit(args[2])+'}'+(hasTopPlus(body)?'\\left('+emit(body)+'\\right)':emit(body));
+        }
+        else if((lname==='int'||lname==='integral') && args.length===4){
+          a='\\int_{'+emit(args[1])+'}^{'+emit(args[2])+'}'+(hasTopPlus(args[3])?'\\left('+emit(args[3])+'\\right)':emit(args[3]))+'\\,d'+emit(args[0]);
+        }
+        else if(MT_TRIG[name]) a='\\'+name+'\\left('+emit(nx.inner)+'\\right)';
+        else if(name.length>1 && !MT_GREEK_SET[name]) a='\\operatorname{'+name+'}\\left('+emit(nx.inner)+'\\right)';
+        else a=idLatex(name)+'\\left('+emit(nx.inner)+'\\right)';
+        out.push({lx:a, atom:true});
+        continue;
+      }
+      if(it.k==='id' && it.v==='d' && nx && nx.k==='op' && nx.v==='/' && items[j+2] && items[j+2].k==='id' && /^d[a-zA-Z]$/.test(items[j+2].v)){
+        out.push({lx:'\\frac{d}{d'+items[j+2].v.charAt(1)+'}', atom:true}); j+=2; continue;
+      }
+      if(it.k==='num') { out.push({lx:it.v, atom:true, simple:true}); continue; }
+      if(it.k==='id') { out.push({lx:idLatex(it.v), atom:true, simple:true}); continue; }
+      if(it.k==='group'){ out.push({lx:groupLatex(it,false), atom:true, grp:it}); continue; }
+      out.push({lx:null, op:it.v});
+    }
+    /* powers bind to the atom before them */
+    var pw=[];
+    for(var q=0;q<out.length;q++){
+      var o=out[q];
+      if(o.op==='^' && pw.length && pw[pw.length-1].atom){
+        var base=pw[pw.length-1], ex=out[q+1], neg='';
+        if(ex && ex.op==='-' && out[q+2] && out[q+2].atom){ neg='-'; q++; ex=out[q+1]; }
+        if(ex && ex.atom){
+          var exl=ex.grp && ex.grp.open==='(' ? emit(ex.grp.inner) : ex.lx;
+          pw[pw.length-1]={lx:base.lx+'^{'+neg+exl+'}', atom:true, grp:null};
+          q++; continue;
+        }
+      }
+      pw.push(o);
+    }
+    /* fractions: previous atom over next atom */
+    var fr=[];
+    for(var r=0;r<pw.length;r++){
+      var o2=pw[r];
+      if(o2.op==='/' && fr.length && fr[fr.length-1].atom && pw[r+1] && pw[r+1].atom){
+        var num=fr.pop(), den=pw[r+1];
+        var nl=num.grp&&num.grp.open==='('?emit(num.grp.inner):num.lx, dl=den.grp&&den.grp.open==='('?emit(den.grp.inner):den.lx;
+        fr.push({lx:'\\frac{'+nl+'}{'+dl+'}', atom:true}); r++; continue;
+      }
+      fr.push(o2);
+    }
+    return fr;
+  }
+  var OPLX={'*':'\\cdot ','<=':'\\le ','>=':'\\ge ','!=':'\\ne ','->':'\\to ','~':'\\sim ','==':'=','|':'|',"'":"'",'%':'\\%'};
+  function emit(items){
+    return atoms(items).map(function(a){
+      if(a.atom) return a.lx;
+      return Object.prototype.hasOwnProperty.call(OPLX,a.op)?OPLX[a.op]:a.op;
+    }).join('');
+  }
+  var all=parseRun();
+  while(p<toks.length){ p++; all=all.concat(parseRun()); }
+  return emit(all);
+}
+
+/* ===== math-style typing with MathLive (loaded from a CDN; falls back to plain text) ===== */
+var MT={ready:false, loading:false, failed:false, cache:{}};
+var MT_URL='https://cdn.jsdelivr.net/npm/mathlive@0.110.0/';
+function mtEnabled(){ try{ return localStorage.getItem('graphite.mathTyping')!=='off'; }catch(e){ return true; } }
+function mtOn(){ return MT.ready && mtEnabled(); }
+function mtLoad(){
+  if(MT.ready || MT.loading || MT.failed || !mtEnabled()) return;
+  MT.loading=true;
+  var sc=document.createElement('script');
+  sc.src=MT_URL+'mathlive.min.js';
+  sc.onload=function(){
+    MT.loading=false;
+    if(!window.MathfieldElement){ MT.failed=true; return; }
+    try{
+      MathfieldElement.fontsDirectory=MT_URL+'fonts/';
+      MathfieldElement.soundsDirectory=null;
+      MathfieldElement.keypressSound=null; MathfieldElement.plonkSound=null;
+    }catch(e){}
+    MT.ready=true;
+    var act=document.activeElement, activeRowEl=act && act.closest ? act.closest('#exprList [data-id]') : null;
+    renderList();
+    if(activeRowEl) focusRow(activeRowEl.dataset.id, true);
+  };
+  sc.onerror=function(){ MT.loading=false; MT.failed=true; };
+  document.head.appendChild(sc);
+}
+/* A math field that was just added takes a moment before it can take focus.
+   Keys typed in that moment are saved here and typed into it once it's ready. */
+MT.redirectId=null; MT.queue=''; MT.redirectTimer=null;
+function mtExpect(id){
+  MT.redirectId=id; MT.queue='';
+  clearTimeout(MT.redirectTimer);
+  MT.redirectTimer=setTimeout(function(){ MT.redirectId=null; MT.queue=''; }, 800);
+}
+document.addEventListener('keydown', function(ev){
+  if(!MT.redirectId) return;
+  var a=document.activeElement;
+  if(a && a._rowId===MT.redirectId) return;
+  if(ev.key.length===1 && !ev.ctrlKey && !ev.metaKey && !ev.altKey){ ev.preventDefault(); ev.stopPropagation(); MT.queue+=ev.key; }
+}, true);
+function mtRow(id){ for(var i=0;i<rows.length;i++) if(rows[i].id===id) return rows[i]; return null; }
+function mtField(row){
+  var mf=MT.cache[row.id];
+  if(mf){
+    if(mf._mtText!==row.text){ mf._mtText=row.text; mf.value=textToLatex(row.text); }
+    return mf;
+  }
+  mf=new MathfieldElement();
+  mf.className='expr-input expr-mf';
+  mf._rowId=row.id;
+  try{
+    mf.mathVirtualKeyboardPolicy='manual';
+    mf.menuItems=[];
+    mf.smartFence=true;
+    mf.smartSuperscript=true;
+    mf.placeholder='\\text{Add expression...}';
+  }catch(e){}
+  mf.setAttribute('math-virtual-keyboard-policy','manual');
+  mf.value=textToLatex(row.text);
+  mf._mtText=row.text;
+  var mtSync=function(){ if(latexToText(mf.value)!==mf._mtText) mf.dispatchEvent(new Event('input')); };
+  mf.addEventListener('keyup', mtSync);
+  mf.addEventListener('undo-state-change', function(){ setTimeout(mtSync,0); });
+  mf.addEventListener('input', function(){
+    var r=mtRow(mf._rowId); if(!r) return;
+    var t=latexToText(mf.value);
+    mf._mtText=t;
+    if(r.text===t) return;
+    r.text=t;
+    if(!r.isFolder && t.charAt(0)==='"'){
+      /* typing a quote mark first turns the row into a note, like Desmos */
+      r.type='note'; r.text=t.slice(1).replace(/^\s+/,'');
+      try{ mf.blur(); }catch(e){}
+      delete MT.cache[r.id];
+      ensureTrailingBlank(); recompute(); renderList(); focusNote(r.id); pushHistory();
+      return;
+    }
+    var sel=null; try{ sel=mf.selection; }catch(e){}
+    handleTextChange(r, null);
+    try{ if(document.activeElement!==mf) mf.focus(); if(sel) mf.selection=sel; }catch(e){}
+  });
+  mf.addEventListener('keydown', function(ev){
+    var r=mtRow(mf._rowId); if(!r) return;
+    if(ev.key==='Enter'){
+      ev.preventDefault(); ev.stopPropagation();
+      var i=rows.indexOf(r), blank=mkRow('');
+      rows.splice(i+1,0,blank); renderList(); focusRow(blank.id); pushHistory();
+    } else if(ev.key==='Backspace' && (mf.value===''||latexToText(mf.value)==='') && rows.length>1){
+      ev.preventDefault(); ev.stopPropagation();
+      var j=rows.indexOf(r); rows.splice(j,1); ensureTrailingBlank();
+      recompute(); renderList(); scheduleRender(); pushHistory();
+      var prev=rows[Math.max(0,j-1)]; if(prev) focusRow(prev.id, true);
+    }
+  }, true);
+  mf.addEventListener('focus', function(){
+    if(MT.redirectId===mf._rowId){
+      var q=MT.queue; MT.redirectId=null; MT.queue='';
+      if(q){ setTimeout(function(){ try{ mf.executeCommand(['typedText', q]); }catch(e){ try{ mf.insert(q); }catch(e2){} } }, 0); }
+    }
+    var r=mtRow(mf._rowId);
+    if(r && r.kind==='explicit-y' && poiRowId!==r.id){ poiRowId=r.id; scheduleRender(); }
+  });
+  mf.addEventListener('blur', function(){ pushHistory(); });
+  MT.cache[row.id]=mf;
+  return mf;
+}
+function mtPrune(){
+  var ids={}; rows.forEach(function(r){ ids[r.id]=1; });
+  Object.keys(MT.cache).forEach(function(k){ if(!ids[k]) delete MT.cache[k]; });
+}
+/* on-screen math keyboard typing into a math field */
+window.mtInsert=mtInsert;
+function mtInsert(mf, text, caretBack){
+  var lx;
+  if(text==='^()') lx='^{#?}';
+  else if(text==='(/)') lx='\\frac{#?}{#?}';
+  else if(/^[a-zA-Z]+\($/.test(text)){
+    var nm=text.slice(0,-1);
+    if(nm==='sqrt') lx='\\sqrt{#?}';
+    else if(nm==='abs') lx='\\left|#?\\right|';
+    else if(MT_TRIG[nm]) lx='\\'+nm+'\\left(#?\\right)';
+    else lx='\\operatorname{'+nm+'}\\left(#?\\right)';
+  }
+  else if(text==='[]') lx='\\left[#?\\right]';
+  else if(text==='()') lx='\\left(#?\\right)';
+  else if(text==='{}') lx='\\left\\{#?\\right\\}';
+  else lx=textToLatex(text) || text;
+  try{ mf.focus(); mf.executeCommand(['insert', lx, {selectionMode:'placeholder', format:'latex'}]); }catch(e){}
+  mf.dispatchEvent(new Event('input', {bubbles:true}));
 }
 
 var MP_GREEK = {pi:'π', theta:'θ', alpha:'α', beta:'β', gamma:'γ', delta:'δ', phi:'φ', lambda:'λ', mu:'μ', sigma:'σ', omega:'ω'};
@@ -2230,7 +2819,7 @@ function buildStylePop(row){
 /* ---------------- notes, tables and images in the expression list ---------------- */
 function focusNote(id){
   var go=function(){ var el=exprListEl.querySelector('[data-id="'+id+'"] .note-input'); if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); } };
-  go(); requestAnimationFrame(go);
+  go(); requestAnimationFrame(function(){ go(); if(window.__mkReposition) window.__mkReposition(); });
 }
 function rowDeleteBtn(row){
   var b=document.createElement('button'); b.className='row-btn'; b.title='Delete';
@@ -2426,7 +3015,7 @@ function addImageFromDataUrl(url){
     var key='img'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
     IMAGES[key]=url;
     var visibleW=cssW/view.scale, w=visibleW*0.5, h=w*(img.naturalHeight/img.naturalWidth)/(view.ry||1);
-    var r=mkRow('',{type:'image', imageKey:key, imgX:view.cx, imgY:view.cy, imgW:w, imgH:h, imgOpacity:1, imgLocked:false, imgKeepAspect:true});
+    var r=mkRow('',{type:'image', imageKey:key, imgX:screenToMath(cssW/2,cssH/2).x, imgY:screenToMath(cssW/2,cssH/2).y, imgW:w, imgH:h, imgOpacity:1, imgLocked:false, imgKeepAspect:true});
     insertBeforeBlank(r); activeImageId=r.id;
     recompute(); renderList(); scheduleRender(); pushHistory(); saveStateSoon();
     showToast('Image added. Drag it to move, drag a corner to resize.');
@@ -2560,8 +3149,14 @@ function renderRow(row, idx){
 
   var inputStack=document.createElement('div');
   inputStack.className='expr-input-stack';
-  inputStack.appendChild(input);
-  if(!row.isFolder){
+  var useMf=mtOn() && !row.isFolder;
+  if(useMf){
+    var mfEl=mtField(row);
+    if(MT.hold && mfEl===MT.hold){ var hold=document.createElement('span'); hold.className='mf-hold'; inputStack.appendChild(hold); }
+    else inputStack.appendChild(mfEl);
+  }
+  else inputStack.appendChild(input);
+  if(!row.isFolder && !useMf){
     var pretty=document.createElement('div');
     pretty.className='expr-pretty mono';
     inputStack.appendChild(pretty);
@@ -2657,7 +3252,7 @@ function renderRow(row, idx){
   inputWrap.appendChild(actions);
   main.appendChild(inputWrap);
 
-  if(!row.isFolder){
+  if(!row.isFolder && !useMf){
     /* typeset preview while typing, so exponents and roots look like real math */
     var live=document.createElement('div');
     live.className='expr-live mono';
@@ -2683,7 +3278,10 @@ function renderRow(row, idx){
     var iv=document.createElement('input'); iv.value=String(row.actionInterval||100); iv.title='Milliseconds between runs';
     iv.addEventListener('change', function(){ var v=parseFloat(iv.value); if(v>=30) row.actionInterval=v; saveStateSoon(); });
     var ms=document.createElement('span'); ms.textContent='ms';
-    ab.appendChild(runBtn); ab.appendChild(repBtn); ab.appendChild(every); ab.appendChild(iv); ab.appendChild(ms);
+    var resetBtn=document.createElement('button'); resetBtn.className='mini-btn'; resetBtn.textContent='Reset';
+    resetBtn.title='Put the values back to where they were before the first Run';
+    resetBtn.addEventListener('click', function(ev){ ev.stopPropagation(); resetAction(row); });
+    ab.appendChild(runBtn); ab.appendChild(repBtn); ab.appendChild(resetBtn); ab.appendChild(every); ab.appendChild(iv); ab.appendChild(ms);
     main.appendChild(ab);
   }
 
@@ -2814,9 +3412,15 @@ function syncBadgesOnly(){
 }
 
 function focusRow(id, atEnd){
+  var first=true;
   var go=function(){
     var el=exprListEl.querySelector('[data-id="'+id+'"] .expr-input');
-    if(el && document.activeElement!==el){ el.focus(); if(atEnd){ var v=el.value; el.value=''; el.value=v; } }
+    if(first && el && el.tagName==='MATH-FIELD'){ first=false; mtExpect(id); }
+    if(el && document.activeElement!==el){
+      el.focus();
+      if(el.tagName==='MATH-FIELD'){ if(atEnd){ try{ el.executeCommand('moveToMathfieldEnd'); }catch(e){} } }
+      else if(atEnd){ var v=el.value; el.value=''; el.value=v; }
+    }
   };
   go(); requestAnimationFrame(go);
 }
@@ -2899,15 +3503,44 @@ var graphWrap=document.getElementById('graphWrapGraphing');
 
 var cssW=0, cssH=0, dpr=1, cssLeft=0, cssTop=0;
 
+/* While the expression list slides open or closed, the canvas is held still
+   at its widest size and position (it does not resize each frame). Resizing
+   every frame at fractional pixel positions made the axes shake. */
+var slideFreeze=null, slideFreezeTimer=null;
 function resizeCanvas(){
   var rect=graphWrap.getBoundingClientRect();
+  if(slideFreeze){ canvas.style.left=(slideFreeze.left-rect.left)+'px'; return; }
+  resizeCanvasTo({left:rect.left, top:rect.top, width:rect.width, height:rect.height});
+}
+function beginSidebarSlide(){
+  if(_reduceMotion || window.innerWidth<=760 || cssW===0) return;
+  var sb=sidebarGraphing.getBoundingClientRect(), wr=graphWrap.getBoundingClientRect();
+  var fl=Math.round(sb.left);
+  if(!slideFreeze){
+    graphWrap.classList.add('sliding');
+    canvas.style.right='auto';
+    resizeCanvasTo({left:fl, top:wr.top, width:wr.right-fl, height:wr.height});
+    slideFreeze={left:fl};
+    canvas.style.left=(fl-wr.left)+'px';
+  }
+  clearTimeout(slideFreezeTimer);
+  slideFreezeTimer=setTimeout(endSidebarSlide, 420);
+}
+function endSidebarSlide(){
+  if(!slideFreeze) return;
+  slideFreeze=null;
+  graphWrap.classList.remove('sliding');
+  canvas.style.left=''; canvas.style.right='';
+  resizeCanvas();
+}
+function resizeCanvasTo(rect){
   var newW=rect.width, newH=rect.height;
   /* Keep the graph still ON SCREEN when the canvas changes size, e.g. when the
      expression list is hidden or shown. The canvas's left edge moves with the
      sidebar, so we pin the math point that sat at the old top-left corner to
      that same spot in the window (not to the canvas's new corner). */
   if(cssW>0 && cssH>0 && newW>0 && newH>0 && (newW!==cssW || newH!==cssH || rect.left!==cssLeft || rect.top!==cssTop)){
-    var anchor=screenToMath(0,0);
+    var anchor=screenToView(0,0);
     var px=cssLeft-rect.left, py=cssTop-rect.top;
     view.cx = anchor.x - (px - newW/2)/view.scale;
     view.cy = anchor.y + (py - newH/2)/yScale();
@@ -2927,11 +3560,19 @@ function resizeCanvas(){
 new ResizeObserver(resizeCanvas).observe(graphWrap);
 
 function yScale(){ return view.scale*(view.ry||1); }
+/* log-scale axes: the view works in log10 space for that axis */
+function tX(x){ return SETTINGS.logX ? (x>0?Math.log10(x):NaN) : x; }
+function tY(y){ return SETTINGS.logY ? (y>0?Math.log10(y):NaN) : y; }
+function iX(v){ return SETTINGS.logX ? Math.pow(10,v) : v; }
+function iY(v){ return SETTINGS.logY ? Math.pow(10,v) : v; }
 function mathToScreen(x,y){
-  return { x: cssW/2 + (x-view.cx)*view.scale, y: cssH/2 - (y-view.cy)*yScale() };
+  return { x: cssW/2 + (tX(x)-view.cx)*view.scale, y: cssH/2 - (tY(y)-view.cy)*yScale() };
+}
+function screenToView(px,py){
+  return { x: view.cx + (px-cssW/2)/view.scale, y: view.cy - (py-cssH/2)/yScale() };
 }
 function screenToMath(px,py){
-  return { x: view.cx + (px-cssW/2)/view.scale, y: view.cy - (py-cssH/2)/yScale() };
+  var v=screenToView(px,py); return { x: iX(v.x), y: iY(v.y) };
 }
 
 function niceStep(raw){
@@ -2963,10 +3604,12 @@ function drawGrid(stage){
   var left=screenToMath(0,0).x, right=screenToMath(cssW,0).x;
   var top=screenToMath(0,0).y, bottom=screenToMath(0,cssH).y;
   var origin=mathToScreen(0,0);
+  var ticksX=axisTicks('x'), ticksY=axisTicks('y');
+  var anyLog=SETTINGS.logX||SETTINGS.logY;
   var gridOn=SETTINGS.showGrid!==false && stage!=='axes';
   var axesStage=(stage!=='grid');
 
-  if(gridOn && SETTINGS.gridType==='polar'){
+  if(gridOn && SETTINGS.gridType==='polar' && !anyLog){
     /* circles around the origin plus rays every 15 degrees */
     var corners=[[left,top],[right,top],[left,bottom],[right,bottom]];
     var maxR=0; corners.forEach(function(c){ maxR=Math.max(maxR, Math.hypot(c[0],c[1])); });
@@ -2991,10 +3634,10 @@ function drawGrid(stage){
     ctx.stroke();
   } else if(gridOn){
     ctx.lineWidth=1;
-    [[stepX/5, stepY/5, th.gridMinor],[stepX, stepY, th.gridMajor]].forEach(function(g){
-      ctx.strokeStyle=g[2]; ctx.beginPath();
-      for(var x=Math.floor(left/g[0])*g[0]; x<=right; x+=g[0]){ var sx=mathToScreen(x,0).x; ctx.moveTo(sx+0.5,0); ctx.lineTo(sx+0.5,cssH); }
-      for(var y=Math.floor(bottom/g[1])*g[1]; y<=top; y+=g[1]){ var sy=mathToScreen(0,y).y; ctx.moveTo(0,sy+0.5); ctx.lineTo(cssW,sy+0.5); }
+    [['minor', th.gridMinor],['major', th.gridMajor]].forEach(function(g){
+      ctx.strokeStyle=g[1]; ctx.beginPath();
+      ticksX[g[0]].forEach(function(t){ var sx=Math.round(t.s); ctx.moveTo(sx+0.5,0); ctx.lineTo(sx+0.5,cssH); });
+      ticksY[g[0]].forEach(function(t){ var sy=Math.round(t.s); ctx.moveTo(0,sy+0.5); ctx.lineTo(cssW,sy+0.5); });
       ctx.stroke();
     });
   }
@@ -3002,8 +3645,8 @@ function drawGrid(stage){
   if(!axesStage) return;
   if(SETTINGS.showAxes!==false){
     ctx.strokeStyle=th.axis; ctx.lineWidth=1.6; ctx.beginPath();
-    ctx.moveTo(0, Math.round(origin.y)+0.5); ctx.lineTo(cssW, Math.round(origin.y)+0.5);
-    ctx.moveTo(Math.round(origin.x)+0.5, 0); ctx.lineTo(Math.round(origin.x)+0.5, cssH);
+    if(isFinite(origin.y)){ ctx.moveTo(0, Math.round(origin.y)+0.5); ctx.lineTo(cssW, Math.round(origin.y)+0.5); }
+    if(isFinite(origin.x)){ ctx.moveTo(Math.round(origin.x)+0.5, 0); ctx.lineTo(Math.round(origin.x)+0.5, cssH); }
     ctx.stroke();
   }
 
@@ -3011,22 +3654,22 @@ function drawGrid(stage){
   ctx.font='11px ui-monospace,Menlo,Consolas,monospace';
   if(SETTINGS.showNumbers!==false){
     ctx.textBaseline='top';
-    var labelY = origin.y>cssH-16 ? cssH-16 : (origin.y<16?16:origin.y+4);
+    var oy=isFinite(origin.y)?origin.y:cssH;
+    var labelY = oy>cssH-16 ? cssH-16 : (oy<16?16:oy+4);
     ctx.textAlign='center';
-    for(var x2=Math.floor(left/stepX)*stepX; x2<=right; x2+=stepX){
-      if(Math.abs(x2)<stepX/1000) continue;
-      var sx2=mathToScreen(x2,0).x;
-      if(sx2<-20||sx2>cssW+20) continue;
-      ctx.fillText(formatAxisNum(x2,stepX), sx2, labelY);
-    }
+    ticksX.major.forEach(function(t){
+      if(!SETTINGS.logX && Math.abs(t.v)<stepX/1000) return;
+      if(t.s<-20||t.s>cssW+20) return;
+      ctx.fillText(t.label, t.s, labelY);
+    });
     ctx.textAlign='left';
-    var labelX = origin.x<40 ? 4 : (origin.x>cssW-10?cssW-40:origin.x+4);
-    for(var y2=Math.floor(bottom/stepY)*stepY; y2<=top; y2+=stepY){
-      if(Math.abs(y2)<stepY/1000) continue;
-      var sy2=mathToScreen(0,y2).y;
-      if(sy2<-10||sy2>cssH+10) continue;
-      ctx.fillText(formatAxisNum(y2,stepY), labelX, sy2-13);
-    }
+    var ox=isFinite(origin.x)?origin.x:0;
+    var labelX = ox<40 ? 4 : (ox>cssW-10?cssW-40:ox+4);
+    ticksY.major.forEach(function(t){
+      if(!SETTINGS.logY && Math.abs(t.v)<stepY/1000) return;
+      if(t.s<-10||t.s>cssH+10) return;
+      ctx.fillText(t.label, labelX, t.s-13);
+    });
   }
   /* axis titles, like Desmos's axis labels */
   ctx.font='italic 13px -apple-system,Segoe UI,Roboto,sans-serif';
@@ -3042,6 +3685,37 @@ function drawGrid(stage){
   }
 }
 
+/* grid line positions for one axis, linear or log. Each tick: v = math value, s = screen position */
+function axisTicks(axis){
+  var isX=axis==='x', log=isX?SETTINGS.logX:SETTINGS.logY;
+  var len=isX?cssW:cssH, sc=isX?view.scale:yScale();
+  var a=isX?screenToView(0,0).x:screenToView(0,cssH).y, b=isX?screenToView(cssW,0).x:screenToView(0,0).y;
+  function pos(vv){ return isX ? cssW/2+(vv-view.cx)*view.scale : cssH/2-(vv-view.cy)*yScale(); }
+  var out={major:[], minor:[]};
+  if(!log){
+    var st=niceStep(70/sc), mi=st/5, n=0;
+    for(var v=Math.floor(a/mi)*mi; v<=b && n<2000; v+=mi, n++){
+      var k=Math.round(v/mi), isMaj=(k%5===0), val=k*mi;
+      if(isMaj) out.major.push({v:val, s:pos(val), label:formatAxisNum(val,st)});
+      else out.minor.push({v:val, s:pos(val)});
+    }
+    return out;
+  }
+  /* log: a, b are powers of ten. One decade takes sc pixels. */
+  var every=Math.max(1, Math.ceil(50/sc));
+  var n2=0;
+  for(var d=Math.floor(a); d<=Math.ceil(b) && n2<400; d++, n2++){
+    if(d%every===0) out.major.push({v:Math.pow(10,d), s:pos(d), label:formatLogNum(d)});
+    else out.minor.push({v:Math.pow(10,d), s:pos(d)});
+    if(sc>=40) for(var m=2;m<=9;m++){ var lv=d+Math.log10(m); if(lv>=a&&lv<=b) out.minor.push({v:m*Math.pow(10,d), s:pos(lv)}); }
+  }
+  return out;
+}
+function formatLogNum(d){
+  if(d>=0 && d<=5) return String(Math.pow(10,d));
+  if(d<0 && d>=-4) return Math.pow(10,d).toFixed(-d);
+  return '1e'+d;
+}
 function formatAxisNum(v,step){
   var decimals=Math.max(0, -Math.floor(Math.log10(step))+1);
   var s=v.toFixed(Math.min(decimals,6));
@@ -3126,7 +3800,7 @@ function drawParametricLike(row, evalFn, tMin, tMax, isPolarKind){
 }
 
 function drawImplicitLike(row, fill){
-  var cellPx = interacting ? (fill?14:11) : (fill?7:5);
+  var cellPx = interacting ? (fill?10:11) : (fill?5:5);
   var cols=Math.ceil(cssW/cellPx)+1;
   var rowsN=Math.ceil(cssH/cellPx)+1;
   var vals=new Float64Array(cols*rowsN);
@@ -3143,6 +3817,42 @@ function drawImplicitLike(row, fill){
   }
   function at(i,j){ return vals[j*cols+i]; }
 
+  if(fill && '< <= > >='.split(' ').indexOf(row.parsed.relOp)!==-1){
+    /* smooth fill: each grid cell is cut along the boundary line (marching
+       squares), and everything is filled as one shape so there are no seams */
+    var op0=row.parsed.relOp, less=(op0==='<'||op0==='<=');
+    function okv(v){ return less ? v<0 : v>0; }
+    ctx.fillStyle=row.color;
+    ctx.globalAlpha=(row.fillOpacity===undefined?0.22:row.fillOpacity);
+    ctx.beginPath();
+    for(var jj=0;jj<rowsN-1;jj++){
+      for(var ii=0;ii<cols-1;ii++){
+        var cv=[at(ii,jj), at(ii+1,jj), at(ii+1,jj+1), at(ii,jj+1)];
+        if(isNaN(cv[0])||isNaN(cv[1])||isNaN(cv[2])||isNaN(cv[3])) continue;
+        var ok4=[okv(cv[0]),okv(cv[1]),okv(cv[2]),okv(cv[3])];
+        var x0=ii*cellPx, y0=jj*cellPx;
+        if(ok4[0]&&ok4[1]&&ok4[2]&&ok4[3]){ ctx.rect(x0,y0,cellPx,cellPx); continue; }
+        if(!ok4[0]&&!ok4[1]&&!ok4[2]&&!ok4[3]) continue;
+        var P=[[x0,y0],[x0+cellPx,y0],[x0+cellPx,y0+cellPx],[x0,y0+cellPx]];
+        var poly=[];
+        for(var e=0;e<4;e++){
+          var n2=(e+1)%4;
+          if(ok4[e]) poly.push(P[e]);
+          if(ok4[e]!==ok4[n2]){
+            var t=cv[e]/(cv[e]-cv[n2]); if(!(t>=0&&t<=1)) t=0.5;
+            poly.push([P[e][0]+t*(P[n2][0]-P[e][0]), P[e][1]+t*(P[n2][1]-P[e][1])]);
+          }
+        }
+        if(poly.length<3) continue;
+        ctx.moveTo(poly[0][0],poly[0][1]);
+        for(var q=1;q<poly.length;q++) ctx.lineTo(poly[q][0],poly[q][1]);
+        ctx.closePath();
+      }
+    }
+    ctx.fill('nonzero');
+    ctx.globalAlpha=1;
+    return;
+  }
   if(fill){
     var op=row.parsed.relOp;
     ctx.fillStyle=row.color;
@@ -3165,7 +3875,7 @@ function drawImplicitLike(row, fill){
     var t=v1/(v1-v2);
     return {x:p1.x+t*(p2.x-p1.x), y:p1.y+t*(p2.y-p1.y)};
   }
-  ctx.beginPath();
+  var segs=[];
   for(var j3=0;j3<rowsN-1;j3++){
     for(var i3=0;i3<cols-1;i3++){
       var a=at(i3,j3), b=at(i3+1,j3), c=at(i3+1,j3+1), d=at(i3,j3+1);
@@ -3174,9 +3884,37 @@ function drawImplicitLike(row, fill){
       var px=i3*cellPx, py=j3*cellPx;
       var TL={x:px,y:py}, TR={x:px+cellPx,y:py}, BR={x:px+cellPx,y:py+cellPx}, BL={x:px,y:py+cellPx};
       var cs=[cross(a,b,TL,TR), cross(b,c,TR,BR), cross(c,d,BR,BL), cross(d,a,BL,TL)].filter(Boolean);
-      if(cs.length===2){ ctx.moveTo(cs[0].x,cs[0].y); ctx.lineTo(cs[1].x,cs[1].y); }
-      else if(cs.length===4){ ctx.moveTo(cs[0].x,cs[0].y); ctx.lineTo(cs[1].x,cs[1].y); ctx.moveTo(cs[2].x,cs[2].y); ctx.lineTo(cs[3].x,cs[3].y); }
+      if(cs.length===2){ segs.push([cs[0],cs[1]]); }
+      else if(cs.length===4){ segs.push([cs[0],cs[1]]); segs.push([cs[2],cs[3]]); }
     }
+  }
+  ctx.beginPath();
+  if(ctx.getLineDash().length){
+    /* join the little pieces into long lines so dashes look right */
+    var key=function(p){ return Math.round(p.x*50)+','+Math.round(p.y*50); };
+    var ends={};
+    segs.forEach(function(sg,k){ [0,1].forEach(function(e){ var kk=key(sg[e]); (ends[kk]||(ends[kk]=[])).push(k); }); });
+    var used=new Uint8Array(segs.length);
+    var nextFrom=function(p){ var l=ends[key(p)]||[]; for(var z=0;z<l.length;z++){ if(!used[l[z]]) return l[z]; } return -1; };
+    for(var k0=0;k0<segs.length;k0++){
+      if(used[k0]) continue;
+      used[k0]=1;
+      var line=[segs[k0][0], segs[k0][1]];
+      [1,0].forEach(function(dir){
+        var guard=0;
+        while(guard++<100000){
+          var tip=dir? line[line.length-1] : line[0];
+          var nk=nextFrom(tip); if(nk<0) break;
+          used[nk]=1;
+          var sg=segs[nk], other=(key(sg[0])===key(tip))?sg[1]:sg[0];
+          if(dir) line.push(other); else line.unshift(other);
+        }
+      });
+      ctx.moveTo(line[0].x,line[0].y);
+      for(var z2=1;z2<line.length;z2++) ctx.lineTo(line[z2].x,line[z2].y);
+    }
+  } else {
+    segs.forEach(function(sg){ ctx.moveTo(sg[0].x,sg[0].y); ctx.lineTo(sg[1].x,sg[1].y); });
   }
   ctx.stroke();
 }
@@ -3396,6 +4134,14 @@ function render(){
     if(row.kind==='inequality'){
       ctx.strokeStyle=row.color; ctx.lineWidth=2;
       drawImplicitLike(row, true);
+      /* boundary line: dashed for < and >, solid for <= and >= (like Desmos) */
+      var rop=row.parsed.relOp;
+      if(rop!=='==' && rop!=='!='){
+        applyRowStroke(row, row.id===hoverRowId);
+        if(rop==='<'||rop==='>') ctx.setLineDash([(row.lineWidth||2.4)*3, (row.lineWidth||2.4)*2.2]);
+        drawImplicitLike(row, false);
+        resetStroke();
+      }
     }
     if(row.kind==='statplot') drawStatPlot(row);
   });
@@ -3419,14 +4165,18 @@ function render(){
       drawParametricLike(row, function(theta){
         var s=Object.create(defsScope); s.theta=theta;
         var r=row.compiled(s);
-        return {x:r*Math.cos(toRad(theta)), y:r*Math.sin(toRad(theta))};
+        var pp={x:r*Math.cos(toRad(theta)), y:r*Math.sin(toRad(theta))};
+        if(row.restrictFn){ s.r=r; s.x=pp.x; s.y=pp.y; if(!row.restrictFn(s)) return null; }
+        return pp;
       }, row.paramMin, row.paramMax, true);
     }
     else if(row.kind==='point'){
       if(row.paramName){
         drawParametricLike(row, function(t){
           var s=Object.create(defsScope); s[row.paramName]=t;
-          return {x:row.compiledX(s), y:row.compiledY(s)};
+          var pp={x:row.compiledX(s), y:row.compiledY(s)};
+          if(row.restrictFn){ s.x=pp.x; s.y=pp.y; if(!row.restrictFn(s)) return null; }
+          return pp;
         }, row.paramMin, row.paramMax, false);
       } else drawPoint(row,isHover);
     }
@@ -3479,6 +4229,8 @@ function zoomToFit(){
   });
   if(pts.length<2){ view.cx=DEFAULT_VIEW.cx; view.cy=DEFAULT_VIEW.cy; view.scale=DEFAULT_VIEW.scale; view.ry=1; scheduleRender(); return; }
   var minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  pts=pts.map(function(p){ return [tX(p[0]),tY(p[1])]; }).filter(function(p){ return isFinite(p[0])&&isFinite(p[1]); });
+  if(pts.length<2){ scheduleRender(); return; }
   pts.forEach(function(p){ minX=Math.min(minX,p[0]); maxX=Math.max(maxX,p[0]); minY=Math.min(minY,p[1]); maxY=Math.max(maxY,p[1]); });
   var padX=(maxX-minX)*0.15||1, padY=(maxY-minY)*0.15||1;
   minX-=padX; maxX+=padX; minY-=padY; maxY+=padY;
@@ -3671,10 +4423,10 @@ canvas.addEventListener('wheel', function(ev){
   ev.preventDefault();
   var rect=canvas.getBoundingClientRect();
   var px=ev.clientX-rect.left, py=ev.clientY-rect.top;
-  var before=screenToMath(px,py);
+  var before=screenToView(px,py);
   var factor=Math.pow(1.0016, -ev.deltaY);
   view.scale=Math.min(200000, Math.max(0.001, view.scale*factor));
-  var after=screenToMath(px,py);
+  var after=screenToView(px,py);
   view.cx += before.x-after.x;
   view.cy += before.y-after.y;
   markInteracting();
@@ -3685,9 +4437,9 @@ canvas.addEventListener('wheel', function(ev){
 canvas.addEventListener('dblclick', function(ev){
   var rect=canvas.getBoundingClientRect();
   var px=ev.clientX-rect.left, py=ev.clientY-rect.top;
-  var before=screenToMath(px,py);
+  var before=screenToView(px,py);
   view.scale*=2;
-  var after=screenToMath(px,py);
+  var after=screenToView(px,py);
   view.cx += before.x-after.x;
   view.cy += before.y-after.y;
   scheduleRender(); saveStateSoon();
@@ -3707,7 +4459,7 @@ canvas.addEventListener('touchstart', function(ev){
     pinchStartScale=view.scale;
     var rect=canvas.getBoundingClientRect();
     var midX=(pts[0].x+pts[1].x)/2-rect.left, midY=(pts[0].y+pts[1].y)/2-rect.top;
-    pinchStartMid=screenToMath(midX,midY);
+    pinchStartMid=screenToView(midX,midY);
   }
 }, {passive:true});
 canvas.addEventListener('touchmove', function(ev){
@@ -3722,7 +4474,7 @@ canvas.addEventListener('touchmove', function(ev){
     view.scale=Math.min(200000, Math.max(0.001, pinchStartScale*(dist/pinchStartDist)));
     var rect=canvas.getBoundingClientRect();
     var midX=(pts[0].x+pts[1].x)/2-rect.left, midY=(pts[0].y+pts[1].y)/2-rect.top;
-    var nowMid=screenToMath(midX,midY);
+    var nowMid=screenToView(midX,midY);
     view.cx += pinchStartMid.x-nowMid.x;
     view.cy += pinchStartMid.y-nowMid.y;
     markInteracting();
@@ -3762,11 +4514,13 @@ function positionCoordReadout(px,py,rect){
 var sidebarGraphing=document.getElementById('sidebarGraphing');
 var sidebarGeometry=document.getElementById('sidebarGeometry');
 var sidebarTable=document.getElementById('sidebarTable');
-var ALL_SIDEBARS=[sidebarGraphing, sidebarGeometry, sidebarTable];
+var sidebar3d=document.getElementById('sidebar3d');
+var ALL_SIDEBARS=[sidebarGraphing, sidebarGeometry, sidebarTable, sidebar3d];
 var backdrop=document.getElementById('backdrop');
 function currentSidebar(){
   if(currentMode==='geometry') return sidebarGeometry;
   if(currentMode==='table') return sidebarTable;
+  if(currentMode==='three') return sidebar3d;
   if(currentMode==='graphing') return sidebarGraphing;
   return null;
 }
@@ -3787,6 +4541,7 @@ var expandListBtn=document.getElementById('expandListBtn');
 var _reduceMotion=(function(){ try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } })();
 var _expandBtnTimer=null;
 collapseListBtn.addEventListener('click', function(){
+  beginSidebarSlide();
   sidebarGraphing.classList.add('list-collapsed');
   if(_expandBtnTimer) clearTimeout(_expandBtnTimer);
   var delay=_reduceMotion?0:380;
@@ -3795,6 +4550,7 @@ collapseListBtn.addEventListener('click', function(){
 expandListBtn.addEventListener('click', function(){
   if(_expandBtnTimer) clearTimeout(_expandBtnTimer);
   expandListBtn.classList.remove('visible');
+  beginSidebarSlide();
   sidebarGraphing.classList.remove('list-collapsed');
 });
 
@@ -3887,20 +4643,24 @@ var HELP_SECTIONS=[
     ['Move around','Drag to pan. Scroll or pinch to zoom. Double-click to zoom in on a spot.'],
     ['Home and fit','The house button resets the view. The corners button zooms to fit your graphs.'],
     ['Undo and redo','Ctrl+Z and Ctrl+Shift+Z, or the arrows in the top bar.'],
-    ['Math keyboard','The keyboard button in the top bar types symbols like pi, square roots, d/dx and sums into the last box you clicked.']
+    ['Math keyboard','The keyboard button in the top bar types symbols like pi, square roots, d/dx and sums into the last box you clicked.'],
+    ['Math-style typing','Fractions, powers and square roots build up as you type, like Desmos. Type / for a fraction, ^ for a power, sqrt for a root, and words like pi or theta. Turn it off in Settings, General.']
   ]},
   {title:'Graphing', items:[
     ['<code>y = 2x + 1</code>','A function of x.'],
     ['<code>x = y^2</code>','A function of y (sideways).'],
     ['<code>x^2 + y^2 = 9</code>','An implicit curve, like a circle.'],
     ['<code>y &lt; x^2</code>','An inequality. The region is shaded.'],
-    ['<code>y = x^2 {-2 &lt; x &lt; 3}</code>','Only draw part of a graph (a domain restriction).'],
+    ['<code>y = x^2 {-2 &lt; x &lt; 3}</code>','Only draw part of a graph (a restriction). Works on any graph, like <code>(cos(t), sin(t)) {x &gt; 0}</code> or <code>x^2+y^2 &lt; 9 {y &gt; 0}</code>. You can add more than one.'],
+    ['<code>y &lt; x</code> vs <code>y &le; x</code>','The edge is dashed for &lt; and &gt;, and solid for &le; and &ge;.'],
+    ['<code>mx + b</code>','Letters next to each other multiply, so mx means m times x.'],
     ['<code>(2, 3)</code>','A point. Drag it on the graph to move it.'],
     ['<code>(a, b)</code>','A point made of sliders. Dragging it changes a and b.'],
     ['<code>(cos(t), sin(t))</code>','A parametric curve. Set the range of t under the row.'],
     ['<code>r = 1 + cos(theta)</code>','A polar curve.'],
     ['<code>a = 3</code>','A slider. Press play to animate it.'],
-    ['<code>f(x) = x^2</code>','Define your own function, then use f(2) or f\'(x).'],
+    ['<code>f(x) = x^2</code>','Define your own function, then use f(2) or f\'(x). Functions can be written in any order.'],
+    ['<code>f(n) = {n &lt;= 1: 1, n*f(n-1)}</code>','Recursion: a function can use itself. Give it a stopping case.'],
     ['Click a curve','Shows grey dots at its x and y intercepts, highs and lows, and where it crosses other curves. Click a dot to see its coordinates.'],
     ['Colours and styles','Click a row\'s colour dot to change colour, dashed or dotted lines, thickness, opacity and point labels.'],
     ['Point labels','In the colour menu, turn on Show label. Write text like <code>A = ${a}</code> to show a live value.']
@@ -3927,13 +4687,25 @@ var HELP_SECTIONS=[
     ['Notes','+ then Note, or start a row with a quote mark ("). Good for instructions and explanations.'],
     ['Images','+ then Image, or paste (Ctrl+V) or drop a picture on the graph. Drag it to move it, drag a corner to resize, lock it to pan over it.'],
     ['<code>a -> a + 1</code>','An action. Press Run to change a. Press Repeat to keep running it, like a Desmos ticker.'],
-    ['<code>a -> 0, b -> b + 1</code>','One action can change several sliders at once.']
+    ['<code>a -> 0, b -> b + 1</code>','One action can change several sliders at once.'],
+    ['Reset','Puts the sliders back to where they were before you first pressed Run.']
   ]},
   {title:'Graph settings', items:[
     ['Window','Settings, Graph: type exact x and y ranges. They can be different sizes.'],
     ['Grid','Square or polar grid, and turn the axes and numbers on or off.'],
+    ['Log scale','Settings, Graph: make the x-axis, the y-axis or both go up by powers of 10 (1, 10, 100, ...).'],
     ['Axis labels','Settings, Graph: name your x and y axes.'],
     ['Angles','Settings, General: radians or degrees.']
+  ]},
+  {title:'3D graphing', items:[
+    ['<code>z = x^2 - y^2</code>','A surface. You can also write just x^2 - y^2.'],
+    ['<code>x^2 + y^2 + z^2 = 9</code>','Any 3D equation, like a sphere.'],
+    ['<code>(cos(t), sin(t), t/4)</code>','A curve in 3D. Set the range of t under the row.'],
+    ['<code>(cos(u)sin(v), sin(u)sin(v), cos(v))</code>','A surface made from u and v.'],
+    ['<code>(1, 2, 3)</code>','A point.'],
+    ['<code>a = 2</code>','A slider you can use in any 3D row.'],
+    ['Moving around','Drag to turn the graph. Scroll or pinch to zoom. The circle arrow button spins it slowly.'],
+    ['Colours','Click a row\'s dot to hide it. Right-click (or Shift+click) to change its colour.']
   ]},
   {title:'Other modes', items:[
     ['Geometry','Build points, lines, circles and polygons by clicking, with a live list of what you made.'],
@@ -4360,6 +5132,20 @@ Array.from(angleSeg.children).forEach(function(btn){
     recompute(); renderList(); scheduleRender(); saveStateSoon();
   });
 });
+(function(){
+  var sw=document.getElementById('mathTypingSwitch');
+  function paint(){ sw.classList.toggle('on', mtEnabled()); }
+  paint();
+  sw.addEventListener('click', function(){
+    var on=!mtEnabled();
+    try{ localStorage.setItem('graphite.mathTyping', on?'on':'off'); }catch(e){}
+    paint();
+    if(on){ if(MT.ready) renderList(); else { MT.failed=false; mtLoad(); } }
+    else { MT.cache={}; renderList(); }
+    if(on && MT.failed) showToast('Math typing could not load. Check your internet.');
+  });
+  mtLoad();
+})();
 var gridSwitch=document.getElementById('gridSwitch');
 if(SETTINGS.showGrid) gridSwitch.classList.add('on');
 gridSwitch.addEventListener('click', function(){
@@ -4410,6 +5196,29 @@ Array.from(themeSeg.children).forEach(function(btn){
     return paint;
   }
   var p1=bindSwitch('axesSwitch','showAxes'), p2=bindSwitch('numbersSwitch','showNumbers');
+  function bindLog(id,key){
+    var el=document.getElementById(id);
+    function paint(){ el.classList.toggle('on', !!SETTINGS[key]); }
+    paint();
+    el.addEventListener('click', function(){
+      var isX=key==='logX';
+      /* keep roughly the same window when switching */
+      var lo=isX?screenToMath(0,0).x:screenToMath(0,cssH).y, hi=isX?screenToMath(cssW,0).x:screenToMath(0,0).y;
+      SETTINGS[key]=!SETTINGS[key];
+      var n0, n1;
+      if(SETTINGS[key]){
+        if(!(hi>0)){ lo=0.1; hi=1000; } else if(!(lo>0)) lo=hi/10000;
+        n0=Math.log10(lo); n1=Math.log10(hi);
+      } else { n0=lo; n1=hi; }
+      var len=isX?cssW:cssH;
+      var newScale=len/(n1-n0);
+      if(isX){ view.cx=(n0+n1)/2; var oldYs=yScale(); view.scale=newScale; view.ry=oldYs/newScale; }
+      else { view.cy=(n0+n1)/2; view.ry=newScale/view.scale; }
+      paint(); scheduleRender(); saveStateSoon(); if(window.__fillWindowInputs) window.__fillWindowInputs();
+    });
+    return paint;
+  }
+  var p3=bindLog('logXSwitch','logX'), p4=bindLog('logYSwitch','logY');
   var gseg=document.getElementById('gridTypeSeg');
   function paintGrid(){ Array.from(gseg.children).forEach(function(b){ b.className=(b.dataset.v===(SETTINGS.gridType||'cartesian'))?'active':''; }); }
   Array.from(gseg.children).forEach(function(b){ b.addEventListener('click', function(){ SETTINGS.gridType=b.dataset.v; paintGrid(); scheduleRender(); saveStateSoon(); }); });
@@ -4422,12 +5231,14 @@ Array.from(themeSeg.children).forEach(function(btn){
   window.__fillWindowInputs=function(){
     var a=screenToMath(0,cssH), b=screenToMath(cssW,0);
     xMin.value=formatNum(a.x); xMax.value=formatNum(b.x); yMin.value=formatNum(a.y); yMax.value=formatNum(b.y);
-    xLabelInput.value=SETTINGS.xLabel||''; yLabelInput.value=SETTINGS.yLabel||''; p1(); p2(); paintGrid();
+    xLabelInput.value=SETTINGS.xLabel||''; yLabelInput.value=SETTINGS.yLabel||''; p1(); p2(); p3(); p4(); paintGrid();
   };
   var xLabelInput=document.getElementById('xLabelInput'), yLabelInput=document.getElementById('yLabelInput');
   document.getElementById('applyWindowBtn').addEventListener('click', function(){
     var x0=parseFloat(xMin.value), x1=parseFloat(xMax.value), y0=parseFloat(yMin.value), y1=parseFloat(yMax.value);
     if(!(x1>x0) || !(y1>y0)){ showToast('Each "to" number must be bigger than its "from" number'); return; }
+    if((SETTINGS.logX && x0<=0) || (SETTINGS.logY && y0<=0)){ showToast('A log axis needs numbers bigger than 0'); return; }
+    x0=tX(x0); x1=tX(x1); y0=tY(y0); y1=tY(y1);
     view.scale=cssW/(x1-x0); view.ry=(cssH/(y1-y0))/view.scale;
     view.cx=(x0+x1)/2; view.cy=(y0+y1)/2;
     scheduleRender(); saveStateSoon(); showToast('Window updated');
@@ -4743,6 +5554,8 @@ document.getElementById('undoBtn').addEventListener('click', undo);
 document.getElementById('redoBtn').addEventListener('click', redo);
 document.addEventListener('keydown', function(ev){
   var mod=ev.ctrlKey||ev.metaKey;
+  /* inside a math field, the field does its own undo while typing */
+  if(ev.target && ev.target.tagName==='MATH-FIELD') return;
   if(mod && ev.key.toLowerCase()==='z' && !ev.shiftKey){ ev.preventDefault(); undo(); }
   else if(mod && ((ev.key.toLowerCase()==='z'&&ev.shiftKey) || ev.key.toLowerCase()==='y')){ ev.preventDefault(); redo(); }
 });
@@ -4751,12 +5564,24 @@ document.addEventListener('keydown', function(ev){
 function runAction(row){
   if(!row.assignFns) return;
   var vals=row.assignFns.map(function(a){ try{ return {name:a.name, v:a.fn(defsScope)}; }catch(e){ return null; } });
+  if(!row._startVals) row._startVals={};
   vals.forEach(function(a){
     if(!a || typeof a.v!=='number' || !isFinite(a.v)) return;
     var sl=rows.find(function(r){ return r.kind==='slider' && r.parsed && r.parsed.name===a.name && !r.isListDef; });
+    if(sl && !(a.name in row._startVals)) row._startVals[a.name]=sl.sliderVal;
     if(sl){ sl.sliderVal=a.v; if(a.v<sl.sliderMin) sl.sliderMin=Math.floor(a.v); if(a.v>sl.sliderMax) sl.sliderMax=Math.ceil(a.v); }
   });
   recompute(); syncBadgesOnly(); scheduleRender(); saveStateSoon();
+}
+function resetAction(row){
+  row.actionRepeat=false;
+  var sv=row._startVals||{};
+  Object.keys(sv).forEach(function(name){
+    var sl=rows.find(function(r){ return r.kind==='slider' && r.parsed && r.parsed.name===name && !r.isListDef; });
+    if(sl) sl.sliderVal=sv[name];
+  });
+  row._startVals=null;
+  recompute(); renderList(); scheduleRender(); saveStateSoon();
 }
 setInterval(function(){
   var now=Date.now();
@@ -4801,6 +5626,7 @@ var tableWrap=document.getElementById('tableWrap');
 
 var MODE_DEFS={
   graphing:  { sidebar:sidebarGraphing, wrap:graphWrapGraphing, btn:modeGraphingBtn, wrapDisplay:'block' },
+  three:     { sidebar:document.getElementById('sidebar3d'), wrap:document.getElementById('wrap3d'), btn:document.getElementById('mode3dBtn'), wrapDisplay:'block' },
   geometry:  { sidebar:sidebarGeometry, wrap:graphWrapGeometry, btn:modeGeometryBtn, wrapDisplay:'block' },
   calculator:{ sidebar:null,            wrap:calcWrap,          btn:modeCalcBtn,     wrapDisplay:'flex'  },
   spreadsheet:{sidebar:null,            wrap:sheetWrap,         btn:modeSheetBtn,    wrapDisplay:'flex'  },
@@ -4825,6 +5651,7 @@ function setMode(mode){
   else if(mode==='spreadsheet' && window.sheetOnShow){ window.sheetOnShow(); }
   else if(mode==='table' && window.tableOnShow){ window.tableOnShow(); }
   else if(mode==='calculator' && window.calcOnShow){ window.calcOnShow(); }
+  else if(mode==='three' && window.threeOnShow){ window.threeOnShow(); }
   updateExportBtnVisibility();
   if(window.__scrollActiveModeIntoView) window.__scrollActiveModeIntoView();
 }
@@ -4879,6 +5706,7 @@ function setMode(mode){
   new ResizeObserver(sync).observe(bar); sync();
 })();
 modeGraphingBtn.addEventListener('click', function(){ setMode('graphing'); });
+document.getElementById('mode3dBtn').addEventListener('click', function(){ setMode('three'); });
 modeGeometryBtn.addEventListener('click', function(){ setMode('geometry'); });
 modeCalcBtn.addEventListener('click', function(){ setMode('calculator'); });
 modeSheetBtn.addEventListener('click', function(){ setMode('spreadsheet'); });
@@ -5195,6 +6023,7 @@ window.__graphiteReady = true;
 window.__debugRows = rows;
 window.__debugScope = function(){ return defsScope; };
 window.MathEngine = { parseExpression: parseExpression, compile: compile };
+window.saveStateSoon = saveStateSoon;
 window.formatMathPretty = formatMathPretty;
 })();
 </script>
@@ -7782,6 +8611,12 @@ document.addEventListener('focusout', function(ev){
     }
   }, 30);
 });
+window.__mkReposition=function(){
+  if(!mkInlineTarget) return;
+  var a=document.activeElement;
+  if(a && a.matches && a.matches(MK_SELECTOR) && a!==mkInlineTarget) mkShowInlineBtn(a);
+  else if(document.body.contains(mkInlineTarget)) mkPositionInlineBtn(mkInlineTarget);
+};
 window.addEventListener('scroll', function(){ if(mkInlineTarget) mkPositionInlineBtn(mkInlineTarget); }, true);
 window.addEventListener('resize', function(){ if(mkInlineTarget) mkPositionInlineBtn(mkInlineTarget); });
 
@@ -7801,6 +8636,7 @@ function mkActiveEl(){
 function mkInsert(text, caretBack){
   var el = mkActiveEl();
   if(!el) return;
+  if(el.tagName==='MATH-FIELD'){ mtInsert(el, text, caretBack); return; }
   var start = (el.selectionStart===null||el.selectionStart===undefined) ? el.value.length : el.selectionStart;
   var end = (el.selectionEnd===null||el.selectionEnd===undefined) ? el.value.length : el.selectionEnd;
   el.value = el.value.slice(0,start) + text + el.value.slice(end);
@@ -7828,6 +8664,7 @@ function mkInsert(text, caretBack){
 function mkBackspace(){
   var el = mkActiveEl();
   if(!el) return;
+  if(el.tagName==='MATH-FIELD'){ try{ el.focus(); el.executeCommand('deleteBackward'); }catch(e){} el.dispatchEvent(new Event('input',{bubbles:true})); return; }
   var start = (el.selectionStart===null||el.selectionStart===undefined) ? el.value.length : el.selectionStart;
   var end = (el.selectionEnd===null||el.selectionEnd===undefined) ? el.value.length : el.selectionEnd;
   if(start===end && start>0){
@@ -7936,4 +8773,423 @@ window.__debugMathKb=function(){ return {open:mkOpen, tab:mkTab, lastInput:mkLas
 })();
 </script>
 
+<script>
+(function(){
+"use strict";
+/* ============================== 3D GRAPHING MODE ==============================
+   Surfaces z = f(x,y), any 3D equation (like x^2+y^2+z^2=9), parametric
+   curves (cos(t), sin(t), t/4), parametric surfaces in u and v, points and
+   sliders. Drawn on a normal 2D canvas: shapes are split into small pieces,
+   sorted back to front, and shaded by how they face the light. */
+var E=window.MathEngine;
+if(!E) return;
+var listEl=document.getElementById('list3d');
+var canvas=document.getElementById('canvas3d');
+var wrap=document.getElementById('wrap3d');
+var ctx=canvas.getContext('2d');
+var PAL=['#2d70b3','#c74440','#388c46','#6042a6','#e07d10','#0d9488','#cc3576','#8a6d3b'];
+var nid=1;
+function mk(text, extra){ var r={id:'t'+(nid++), text:text||'', color:PAL[(nid-2)%PAL.length], hidden:false, val:null, min:-10, max:10, t0:0, t1:2*Math.PI, u0:0, u1:2*Math.PI, v0:0, v1:2*Math.PI}; if(extra) for(var k in extra) r[k]=extra[k]; return r; }
+var rows3=[];
+var view3={az:-0.75, el:0.42, R:5, spin:false};
+var cssW=0, cssH=0, dpr=1;
+var fns3={}, scope3={};
+var interacting=false, itTimer=null;
+
+function defaults(){
+  nid=1;
+  rows3=[mk('z=sin(x)*cos(y)'), mk('(3cos(t), 3sin(t), t/3)'), mk('')];
+  rows3[1].t0=0; rows3[1].t1=4*Math.PI;
+}
+function load(){
+  try{
+    var d=JSON.parse(localStorage.getItem('graphite.3d.v1')||'null');
+    if(d) { applyState(d); return; }
+  }catch(e){}
+  defaults();
+}
+function getState(){ return {rows:rows3.map(function(r){ return {text:r.text,color:r.color,hidden:r.hidden,val:r.val,min:r.min,max:r.max,t0:r.t0,t1:r.t1,u0:r.u0,u1:r.u1,v0:r.v0,v1:r.v1}; }), view:{az:view3.az, el:view3.el, R:view3.R}}; }
+function applyState(d){
+  if(!d || !Array.isArray(d.rows)) return;
+  nid=1;
+  rows3=d.rows.map(function(r){ return mk(r.text, r); });
+  if(!rows3.length || rows3[rows3.length-1].text!=='') rows3.push(mk(''));
+  if(d.view){ view3.az=+d.view.az||view3.az; view3.el=+d.view.el||view3.el; view3.R=+d.view.R||5; }
+}
+var saveT=null;
+function save(){ clearTimeout(saveT); saveT=setTimeout(function(){ try{ localStorage.setItem('graphite.3d.v1', JSON.stringify(getState())); }catch(e){} if(window.saveStateSoon) window.saveStateSoon(); }, 300); }
+window.__get3dState=getState;
+window.__apply3dState=function(d){ applyState(d); recompute3(); renderList3(); draw(); };
+
+/* ---------- understanding each row ---------- */
+function ids(node, set){
+  if(!node || typeof node!=='object') return set;
+  if(Array.isArray(node)){ node.forEach(function(n){ ids(n,set); }); return set; }
+  if(node.type==='id') set.add(node.name);
+  for(var k in node) if(k!=='type' && k!=='name' && node[k] && typeof node[k]==='object') ids(node[k], set);
+  return set;
+}
+function splitComma(s){
+  var out=[], depth=0, cur='';
+  for(var i=0;i<s.length;i++){ var c=s[i]; if('([{'.indexOf(c)>=0) depth++; if(')]}'.indexOf(c)>=0) depth--; if(c===','&&depth===0){ out.push(cur); cur=''; } else cur+=c; }
+  out.push(cur); return out;
+}
+function topEq(s){
+  var depth=0;
+  for(var i=0;i<s.length;i++){ var c=s[i]; if('([{'.indexOf(c)>=0) depth++; else if(')]}'.indexOf(c)>=0) depth--; else if(depth===0 && c==='=' && s[i-1]!=='<' && s[i-1]!=='>' && s[i-1]!=='!' && s[i+1]!=='=') return i; }
+  return -1;
+}
+var FN_RE=/^([a-zA-Z][a-zA-Z0-9]*)\(([a-zA-Z][a-zA-Z0-9]*(?:\s*,\s*[a-zA-Z][a-zA-Z0-9]*)*)\)$/;
+var AXES={x:1,y:1,z:1};
+function classify3(text){
+  var t=text.trim();
+  if(!t) return {kind:'empty'};
+  var pm=t.match(/^\((.*)\)$/);
+  if(pm){
+    var parts=splitComma(pm[1]);
+    if(parts.length===3){
+      var asts=parts.map(function(p){ return E.parseExpression(p); });
+      var set=new Set(); asts.forEach(function(a){ ids(a,set); });
+      if(set.has('u')||set.has('v')) return {kind:'psurf', asts:asts};
+      if(set.has('t')) return {kind:'curve', asts:asts};
+      return {kind:'point', asts:asts};
+    }
+  }
+  var eq=topEq(t);
+  if(eq>0){
+    var L=t.slice(0,eq).trim(), Rt=t.slice(eq+1).trim();
+    var fm=L.match(FN_RE);
+    if(fm) return {kind:'fn', name:fm[1], params:fm[2].split(',').map(function(s){return s.trim();}), ast:E.parseExpression(Rt)};
+    var rAst=E.parseExpression(Rt), rIds=ids(rAst,new Set());
+    if(AXES[L] && !rIds.has(L)) return {kind:'explicit', axis:L, ast:rAst};
+    if(/^[a-zA-Z][a-zA-Z0-9]*$/.test(L) && !AXES[L] && !rIds.has('x') && !rIds.has('y') && !rIds.has('z')) return {kind:'slider', name:L, ast:rAst};
+    return {kind:'implicit', ast:E.parseExpression('('+L+')-('+Rt+')')};
+  }
+  var ast=E.parseExpression(t), s2=ids(ast,new Set());
+  if(s2.has('x')||s2.has('y')) return {kind:'explicit', axis:'z', ast:ast};
+  return {kind:'value', ast:ast};
+}
+function recompute3(){
+  fns3={}; scope3={};
+  rows3.forEach(function(r){
+    r.err=null; r.c=null;
+    try{ r.c=classify3(r.text); }catch(e){ r.err=e.message||String(e); return; }
+    if(r.c.kind==='fn') fns3[r.c.name]={params:r.c.params, compiled:null};
+  });
+  rows3.forEach(function(r){ if(r.c && r.c.kind==='fn'){ try{ fns3[r.c.name].compiled=E.compile(r.c.ast, fns3); }catch(e){ r.err=e.message; } } });
+  rows3.forEach(function(r){
+    if(r.err || !r.c) return;
+    var c=r.c;
+    try{
+      if(c.kind==='slider'){
+        var f=E.compile(c.ast, fns3), v=f(scope3);
+        if(typeof v!=='number') throw new Error('Sliders need a number');
+        if(r.val===null || r.val===undefined || r._src!==r.text){ r.val=v; r._src=r.text; }
+        if(r.val<r.min) r.min=Math.floor(r.val); if(r.val>r.max) r.max=Math.ceil(r.val);
+        scope3[c.name]=r.val;
+      } else if(c.kind==='explicit' || c.kind==='implicit'){ r.f=E.compile(c.ast, fns3); }
+      else if(c.kind==='point' || c.kind==='curve' || c.kind==='psurf'){ r.fs=c.asts.map(function(a){ return E.compile(a, fns3); }); }
+      else if(c.kind==='value'){ var vv=E.compile(c.ast, fns3)(scope3); r.valueText='= '+(typeof vv==='number'?fmt(vv):String(vv)); }
+    }catch(e){ r.err=e.message||String(e); }
+  });
+}
+function fmt(v){ if(!isFinite(v)) return 'undefined'; return String(Math.round(v*10000)/10000); }
+
+/* ---------- camera ---------- */
+function proj(x,y,z){
+  var R=view3.R, px=x/R, py=y/R, pz=z/R;
+  var ca=Math.cos(view3.az), sa=Math.sin(view3.az), ce=Math.cos(view3.el), se=Math.sin(view3.el);
+  var X=px*ca-py*sa, Y=px*sa+py*ca;
+  var D=Y*ce+pz*se, U=-Y*se+pz*ce;
+  var f=5, persp=f/(f+D);
+  var s=Math.min(cssW*0.31, cssH*0.36);
+  return {x:cssW/2+X*s*persp, y:cssH/2-U*s*persp+cssH*0.02, d:D};
+}
+var LIGHT=(function(){ var l=[0.4,-0.5,0.8], n=Math.hypot(l[0],l[1],l[2]); return [l[0]/n,l[1]/n,l[2]/n]; })();
+function hexRgb(h){ var n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function shadeCol(rgb, k, a){ return 'rgba('+Math.round(rgb[0]*k)+','+Math.round(rgb[1]*k)+','+Math.round(rgb[2]*k)+','+a+')'; }
+
+function tri(items, P, rgb){
+  /* P: array of [x,y,z] world points (3 or 4) */
+  var a=P[0], b=P[1], c=P[2];
+  var ux=b[0]-a[0], uy=b[1]-a[1], uz=b[2]-a[2], vx=c[0]-a[0], vy=c[1]-a[1], vz=c[2]-a[2];
+  var nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx, nl=Math.hypot(nx,ny,nz)||1;
+  var lam=Math.abs((nx*LIGHT[0]+ny*LIGHT[1]+nz*LIGHT[2])/nl);
+  var S=P.map(function(p){ return proj(p[0],p[1],p[2]); });
+  var d=0; S.forEach(function(s){ d+=s.d; }); d/=S.length;
+  items.push({t:'poly', S:S, d:d, fill:shadeCol(rgb, 0.62+0.45*lam, 0.93), line:shadeCol(rgb,0.55,0.35)});
+}
+function sc(s){ return s; }
+
+function buildItems(){
+  var items=[], R=view3.R, N=interacting?22:40;
+  rows3.forEach(function(r){
+    if(r.hidden || r.err || !r.c) return;
+    var c=r.c, rgb=hexRgb(r.color);
+    var sp=function(){ return Object.create(scope3); };
+    if(c.kind==='explicit'){
+      var ax=c.axis, o=(ax==='z')?['x','y']:(ax==='x')?['y','z']:['x','z'];
+      var G=[];
+      for(var i=0;i<=N;i++){ G.push([]); for(var j=0;j<=N;j++){
+        var a=-R+2*R*i/N, b=-R+2*R*j/N, s=sp(); s[o[0]]=a; s[o[1]]=b; var w;
+        try{ w=r.f(s); }catch(e){ w=NaN; }
+        var pt={}; pt[o[0]]=a; pt[o[1]]=b; pt[ax]=w;
+        G[i].push((typeof w==='number' && isFinite(w) && Math.abs(w)<=R*1.0001)?[pt.x,pt.y,pt.z]:null);
+      } }
+      for(var i2=0;i2<N;i2++) for(var j2=0;j2<N;j2++){
+        var q=[G[i2][j2],G[i2+1][j2],G[i2+1][j2+1],G[i2][j2+1]];
+        var ok=q.filter(Boolean);
+        if(ok.length===4) tri(items,q,rgb); else if(ok.length===3) tri(items,ok,rgb);
+      }
+    } else if(c.kind==='implicit'){
+      implicitTris(r, items, rgb, interacting?14:24);
+    } else if(c.kind==='psurf'){
+      var M=interacting?20:36, P=[];
+      for(var i3=0;i3<=M;i3++){ P.push([]); for(var j3=0;j3<=M;j3++){
+        var s3=sp(); s3.u=r.u0+(r.u1-r.u0)*i3/M; s3.v=r.v0+(r.v1-r.v0)*j3/M; var pp;
+        try{ pp=[r.fs[0](s3), r.fs[1](s3), r.fs[2](s3)]; }catch(e){ pp=null; }
+        P[i3].push(pp && pp.every(function(z){ return isFinite(z); }) ? pp : null);
+      } }
+      for(var i4=0;i4<M;i4++) for(var j4=0;j4<M;j4++){
+        var q2=[P[i4][j4],P[i4+1][j4],P[i4+1][j4+1],P[i4][j4+1]];
+        if(q2.every(Boolean)) tri(items,q2,rgb);
+      }
+    } else if(c.kind==='curve'){
+      var K=interacting?200:500, prev=null;
+      for(var k=0;k<=K;k++){
+        var s4=sp(); s4.t=r.t0+(r.t1-r.t0)*k/K; var cp;
+        try{ cp=[r.fs[0](s4), r.fs[1](s4), r.fs[2](s4)]; }catch(e){ cp=null; }
+        if(!cp || !cp.every(function(z){ return isFinite(z); })){ prev=null; continue; }
+        var ps=proj(cp[0],cp[1],cp[2]);
+        if(prev) items.push({t:'seg', a:prev, b:ps, d:(prev.d+ps.d)/2 - 0.002, col:r.color});
+        prev=ps;
+      }
+    } else if(c.kind==='point'){
+      try{
+        var s5=sp(), v=[r.fs[0](s5), r.fs[1](s5), r.fs[2](s5)];
+        if(v.every(function(z){ return isFinite(z); })){ var q5=proj(v[0],v[1],v[2]); items.push({t:'pt', p:q5, d:q5.d-0.01, col:r.color, label:'('+v.map(fmt).join(', ')+')'}); }
+      }catch(e){}
+    }
+  });
+  return items;
+}
+
+/* marching tetrahedra for F(x,y,z)=0 */
+var TETS=[[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]];
+var CORN=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
+function implicitTris(r, items, rgb, N){
+  var R=view3.R, h=2*R/N, n1=N+1, V=new Float64Array(n1*n1*n1);
+  var s=Object.create(scope3);
+  for(var i=0;i<=N;i++) for(var j=0;j<=N;j++) for(var k=0;k<=N;k++){
+    s.x=-R+i*h; s.y=-R+j*h; s.z=-R+k*h; var w;
+    try{ w=r.f(s); }catch(e){ w=NaN; }
+    V[(i*n1+j)*n1+k]=(typeof w==='number')?w:NaN;
+  }
+  function val(i,j,k){ return V[(i*n1+j)*n1+k]; }
+  function lerp(p,q,a,b){ var t=a/(a-b); return [p[0]+(q[0]-p[0])*t, p[1]+(q[1]-p[1])*t, p[2]+(q[2]-p[2])*t]; }
+  for(var i2=0;i2<N;i2++) for(var j2=0;j2<N;j2++) for(var k2=0;k2<N;k2++){
+    var cv=[], cp=[], pos=0, neg=0, bad=false;
+    for(var c=0;c<8;c++){
+      var ii=i2+CORN[c][0], jj=j2+CORN[c][1], kk=k2+CORN[c][2], w2=val(ii,jj,kk);
+      if(isNaN(w2)){ bad=true; break; }
+      cv.push(w2); cp.push([-R+ii*h, -R+jj*h, -R+kk*h]);
+      if(w2>0) pos++; else neg++;
+    }
+    if(bad || pos===0 || neg===0) continue;
+    for(var t=0;t<6;t++){
+      var T=TETS[t], ins=[], outs=[];
+      for(var m=0;m<4;m++){ if(cv[T[m]]>0) ins.push(T[m]); else outs.push(T[m]); }
+      if(ins.length===0||ins.length===4) continue;
+      if(ins.length===1||ins.length===3){
+        var lone=ins.length===1?ins[0]:outs[0], rest=ins.length===1?outs:ins;
+        tri(items, rest.map(function(o){ return lerp(cp[lone],cp[o],cv[lone],cv[o]); }), rgb);
+      } else {
+        var a=ins[0], b=ins[1], c1=outs[0], d=outs[1];
+        tri(items, [lerp(cp[a],cp[c1],cv[a],cv[c1]), lerp(cp[a],cp[d],cv[a],cv[d]), lerp(cp[b],cp[d],cv[b],cv[d]), lerp(cp[b],cp[c1],cv[b],cv[c1])], rgb);
+      }
+    }
+  }
+}
+
+function theme(){
+  var cs=getComputedStyle(document.documentElement);
+  return {bg:cs.getPropertyValue('--bg').trim()||'#fff', ink:cs.getPropertyValue('--ink-soft').trim()||'#555', grid:cs.getPropertyValue('--grid-major').trim()||'#ddd', axis:cs.getPropertyValue('--axis').trim()||'#333'};
+}
+function line3(a,b,col,w){ var p=proj(a[0],a[1],a[2]), q=proj(b[0],b[1],b[2]); ctx.strokeStyle=col; ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke(); }
+function niceStep(raw){ var e=Math.floor(Math.log10(raw)), b=Math.pow(10,e), f=raw/b; return (f<1.5?1:f<3.5?2:f<7.5?5:10)*b; }
+function draw(){
+  if(!cssW) resize();
+  if(!cssW) return;
+  var th=theme(), R=view3.R;
+  ctx.save(); ctx.scale(dpr,dpr);
+  ctx.fillStyle=th.bg; ctx.fillRect(0,0,cssW,cssH);
+  /* floor grid and box */
+  var st=niceStep(R/4);
+  ctx.globalAlpha=0.9;
+  for(var g=-Math.floor(R/st)*st; g<=R+1e-9; g+=st){ line3([g,-R,-R],[g,R,-R],th.grid,1); line3([-R,g,-R],[R,g,-R],th.grid,1); }
+  var B=[[-R,-R,-R],[R,-R,-R],[R,R,-R],[-R,R,-R],[-R,-R,R],[R,-R,R],[R,R,R],[-R,R,R]];
+  [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]].forEach(function(e){ line3(B[e[0]],B[e[1]],th.grid,1); });
+  ctx.globalAlpha=1;
+  /* axes */
+  [['x',[1,0,0]],['y',[0,1,0]],['z',[0,0,1]]].forEach(function(a){
+    var v=a[1]; line3([-R*v[0],-R*v[1],-R*v[2]],[R*v[0],R*v[1],R*v[2]],th.axis,1.4);
+    var e=proj(R*1.12*v[0],R*1.12*v[1],R*1.12*v[2]);
+    ctx.fillStyle=th.ink; ctx.font='italic 14px -apple-system,Segoe UI,Roboto,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(a[0], e.x, e.y);
+  });
+  ctx.font='10.5px ui-monospace,Menlo,Consolas,monospace'; ctx.fillStyle=th.ink;
+  for(var g2=-Math.floor(R/st)*st; g2<=R+1e-9; g2+=st){
+    if(Math.abs(g2)<1e-9) continue;
+    var lx=proj(g2,-R*1.08,-R), ly=proj(R*1.08,g2,-R), lz=proj(-R,-R*1.06,g2);
+    var lab=String(Math.round(g2*1000)/1000);
+    ctx.fillText(lab,lx.x,lx.y); ctx.fillText(lab,ly.x,ly.y); ctx.fillText(lab,lz.x,lz.y);
+  }
+  /* shapes, back to front */
+  var items=buildItems();
+  items.sort(function(a,b){ return b.d-a.d; });
+  ctx.lineJoin='round'; ctx.lineCap='round';
+  items.forEach(function(it){
+    if(it.t==='poly'){
+      ctx.beginPath(); ctx.moveTo(it.S[0].x,it.S[0].y);
+      for(var i=1;i<it.S.length;i++) ctx.lineTo(it.S[i].x,it.S[i].y);
+      ctx.closePath(); ctx.fillStyle=it.fill; ctx.fill();
+      ctx.strokeStyle=it.line; ctx.lineWidth=0.6; ctx.stroke();
+    } else if(it.t==='seg'){
+      ctx.strokeStyle=it.col; ctx.lineWidth=2.6; ctx.beginPath(); ctx.moveTo(it.a.x,it.a.y); ctx.lineTo(it.b.x,it.b.y); ctx.stroke();
+    } else if(it.t==='pt'){
+      ctx.beginPath(); ctx.arc(it.p.x,it.p.y,5.5,0,Math.PI*2); ctx.fillStyle=it.col; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle=th.bg; ctx.stroke();
+      ctx.font='12px -apple-system,Segoe UI,Roboto,sans-serif'; ctx.textAlign='left'; ctx.fillStyle=it.col; ctx.fillText(it.label, it.p.x+9, it.p.y-9);
+    }
+  });
+  ctx.restore();
+}
+var rafId=null;
+function schedule(){ if(rafId) return; rafId=requestAnimationFrame(function(){ rafId=null; draw(); }); }
+function markInteract(){ interacting=true; clearTimeout(itTimer); itTimer=setTimeout(function(){ interacting=false; schedule(); },160); }
+
+function resize(){
+  var r=wrap.getBoundingClientRect();
+  if(r.width<=0||r.height<=0) return;
+  cssW=r.width; cssH=r.height; dpr=window.devicePixelRatio||1;
+  canvas.width=Math.round(cssW*dpr); canvas.height=Math.round(cssH*dpr);
+  canvas.style.width=cssW+'px'; canvas.style.height=cssH+'px';
+  draw();
+}
+new ResizeObserver(function(){ if(wrap.style.display!=='none') resize(); }).observe(wrap);
+
+/* ---------- mouse and touch ---------- */
+var drag=null, pinch=null, touches={};
+canvas.addEventListener('pointerdown', function(ev){
+  canvas.setPointerCapture(ev.pointerId);
+  touches[ev.pointerId]={x:ev.clientX,y:ev.clientY};
+  var ks=Object.keys(touches);
+  if(ks.length===2){ var a=touches[ks[0]], b=touches[ks[1]]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y), R:view3.R}; drag=null; }
+  else { drag={x:ev.clientX, y:ev.clientY, az:view3.az, el:view3.el}; view3.spin=false; paintSpin(); }
+});
+canvas.addEventListener('pointermove', function(ev){
+  if(!touches[ev.pointerId]) return;
+  touches[ev.pointerId]={x:ev.clientX,y:ev.clientY};
+  var ks=Object.keys(touches);
+  if(pinch && ks.length===2){ var a=touches[ks[0]], b=touches[ks[1]], d=Math.hypot(a.x-b.x,a.y-b.y); view3.R=clampR(pinch.R*pinch.d/Math.max(d,1)); markInteract(); schedule(); return; }
+  if(!drag) return;
+  view3.az=drag.az-(ev.clientX-drag.x)*0.008;
+  view3.el=Math.max(-1.5, Math.min(1.5, drag.el+(ev.clientY-drag.y)*0.008));
+  markInteract(); schedule();
+});
+function endPtr(ev){ delete touches[ev.pointerId]; if(Object.keys(touches).length<2) pinch=null; if(!Object.keys(touches).length){ drag=null; save(); } }
+canvas.addEventListener('pointerup', endPtr); canvas.addEventListener('pointercancel', endPtr);
+function clampR(v){ return Math.max(0.05, Math.min(1e6, v)); }
+canvas.addEventListener('wheel', function(ev){ ev.preventDefault(); view3.R=clampR(view3.R*Math.pow(1.0015, ev.deltaY)); markInteract(); schedule(); save(); }, {passive:false});
+document.getElementById('zoomIn3d').addEventListener('click', function(){ view3.R=clampR(view3.R/1.4); draw(); save(); });
+document.getElementById('zoomOut3d').addEventListener('click', function(){ view3.R=clampR(view3.R*1.4); draw(); save(); });
+document.getElementById('home3d').addEventListener('click', function(){ view3.az=-0.75; view3.el=0.42; view3.R=5; draw(); save(); });
+var spinBtn=document.getElementById('spin3d');
+function paintSpin(){ spinBtn.classList.toggle('on', !!view3.spin); }
+spinBtn.addEventListener('click', function(){ view3.spin=!view3.spin; paintSpin(); if(view3.spin) spinLoop(); });
+function spinLoop(){ if(!view3.spin || wrap.style.display==='none'){ return; } view3.az+=0.006; interacting=true; draw(); requestAnimationFrame(spinLoop); clearTimeout(itTimer); itTimer=setTimeout(function(){ interacting=false; schedule(); },200); }
+
+/* ---------- sidebar ---------- */
+function renderList3(){
+  listEl.innerHTML='';
+  rows3.forEach(function(r, idx){
+    var el=document.createElement('div'); el.className='expr-row'+(r.err?' is-error':''); el.dataset.id3=r.id;
+    var num=document.createElement('span'); num.className='row3-num'; num.textContent=String(idx+1); el.appendChild(num);
+    var sw=document.createElement('button'); sw.className='swatch-btn'; sw.title='Change color / hide';
+    sw.style.setProperty('--dot-color', r.color);
+    if(r.hidden) sw.style.setProperty('--dot-fill','transparent');
+    sw.addEventListener('click', function(ev){ ev.stopPropagation(); if(ev.shiftKey){ var k=PAL.indexOf(r.color); r.color=PAL[(k+1)%PAL.length]; } else r.hidden=!r.hidden; renderList3(); draw(); save(); });
+    sw.addEventListener('contextmenu', function(ev){ ev.preventDefault(); var k=PAL.indexOf(r.color); r.color=PAL[(k+1)%PAL.length]; renderList3(); draw(); save(); });
+    el.appendChild(sw);
+    var main=document.createElement('div'); main.className='expr-main';
+    var line=document.createElement('div'); line.className='expr-input-wrap';
+    var inp=document.createElement('input'); inp.className='expr-input mono'; inp.type='text'; inp.spellcheck=false; inp.autocomplete='off';
+    inp.placeholder=idx===rows3.length-1?'Add expression, like z=x^2-y^2':''; inp.value=r.text;
+    inp.addEventListener('input', function(){
+      r.text=inp.value;
+      var wasLast=(rows3[rows3.length-1]===r);
+      recompute3();
+      if(wasLast && r.text.trim()!==''){ rows3.push(mk('')); var pos=inp.selectionStart; renderList3(); var ni=listEl.querySelector('[data-id3="'+r.id+'"] .expr-input'); if(ni){ ni.focus(); try{ ni.setSelectionRange(pos,pos); }catch(e){} } }
+      else updateRowBits(el, r);
+      schedule(); save();
+    });
+    inp.addEventListener('blur', function(){ renderList3(); });
+    inp.addEventListener('keydown', function(ev){
+      if(ev.key==='Enter'){ ev.preventDefault(); var i=rows3.indexOf(r), b=mk(''); rows3.splice(i+1,0,b); renderList3(); focus3(b.id); }
+      else if(ev.key==='Backspace' && inp.value==='' && rows3.length>1){ ev.preventDefault(); var j=rows3.indexOf(r); rows3.splice(j,1); if(rows3[rows3.length-1].text!=='') rows3.push(mk('')); recompute3(); renderList3(); draw(); save(); var pv=rows3[Math.max(0,j-1)]; if(pv) focus3(pv.id); }
+    });
+    line.appendChild(inp);
+    var badge=document.createElement('span'); badge.className='expr-badge mono'; line.appendChild(badge);
+    if(idx!==rows3.length-1 || r.text){
+      var del=document.createElement('button'); del.className='row-btn'; del.title='Delete';
+      del.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 3.5h9M5.3 3.5V2.2h3.4v1.3M3.6 3.5l.5 8.3h5.8l.5-8.3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      del.addEventListener('click', function(){ rows3.splice(rows3.indexOf(r),1); if(!rows3.length || rows3[rows3.length-1].text!=='') rows3.push(mk('')); recompute3(); renderList3(); draw(); save(); });
+      var acts=document.createElement('div'); acts.className='expr-row-actions'; acts.appendChild(del); line.appendChild(acts);
+    }
+    main.appendChild(line);
+    var extra=document.createElement('div'); extra.className='row3-extra'; main.appendChild(extra);
+    var errEl=document.createElement('div'); errEl.className='expr-error'; main.appendChild(errEl);
+    el.appendChild(main);
+    listEl.appendChild(el);
+    updateRowBits(el, r);
+  });
+}
+function rangeInputs(r, a, b, label){
+  var box=document.createElement('div'); box.className='row3-range mono';
+  var mkIn=function(key){ var i=document.createElement('input'); i.value=fmt(r[key]); i.addEventListener('change', function(){ var v=evalNum(i.value); if(isFinite(v)){ r[key]=v; draw(); save(); } else i.value=fmt(r[key]); }); return i; };
+  box.appendChild(document.createTextNode(label+': ')); box.appendChild(mkIn(a)); box.appendChild(document.createTextNode(' to ')); box.appendChild(mkIn(b));
+  return box;
+}
+function evalNum(s){ try{ var v=E.compile(E.parseExpression(s), fns3)(Object.create(scope3)); return typeof v==='number'?v:NaN; }catch(e){ return NaN; } }
+function updateRowBits(el, r){
+  el.classList.toggle('is-error', !!r.err);
+  var badge=el.querySelector('.expr-badge'), extra=el.querySelector('.row3-extra'), errEl=el.querySelector('.expr-error');
+  errEl.textContent=r.err||''; errEl.style.display=r.err?'':'none';
+  var k=r.c&&!r.err?r.c.kind:null;
+  badge.textContent = k==='value'?r.valueText : k==='fn'?'fn' : k==='curve'?'curve' : k==='psurf'?'surface' : k==='implicit'?'3D equation' : '';
+  badge.style.display=badge.textContent?'':'none';
+  var want=k==='slider'?'slider':k==='curve'?'curve':k==='psurf'?'psurf':'';
+  if(extra.dataset.kind===want) return;
+  extra.dataset.kind=want; extra.innerHTML='';
+  if(want==='slider'){
+    var sl=document.createElement('input'); sl.type='range'; sl.className='row3-slider'; sl.min=r.min; sl.max=r.max; sl.step='any'; sl.value=r.val;
+    var out=document.createElement('span'); out.className='mono row3-val'; out.textContent=fmt(r.val);
+    sl.addEventListener('input', function(){ r.val=parseFloat(sl.value); out.textContent=fmt(r.val); recompute3(); markInteract(); schedule(); save(); });
+    extra.appendChild(sl); extra.appendChild(out);
+  } else if(want==='curve') extra.appendChild(rangeInputs(r,'t0','t1','t'));
+  else if(want==='psurf'){ extra.appendChild(rangeInputs(r,'u0','u1','u')); extra.appendChild(rangeInputs(r,'v0','v1','v')); }
+}
+function focus3(id){ var go=function(){ var el=listEl.querySelector('[data-id3="'+id+'"] .expr-input'); if(el && document.activeElement!==el) el.focus(); }; go(); requestAnimationFrame(go); }
+document.getElementById('add3dRow').addEventListener('click', function(){ focus3(rows3[rows3.length-1].id); });
+document.getElementById('examples3d').addEventListener('change', function(ev){
+  var v=ev.target.value; ev.target.value='';
+  if(!v) return;
+  var last=rows3[rows3.length-1];
+  v.split('|').forEach(function(t){ rows3.splice(rows3.length-1,0,mk(t)); });
+  recompute3(); renderList3(); draw(); save();
+});
+
+window.threeOnShow=function(){ resize(); draw(); if(view3.spin) spinLoop(); };
+load(); recompute3(); renderList3();
+})();
+</script>
 </body></html>
